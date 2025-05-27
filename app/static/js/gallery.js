@@ -308,8 +308,9 @@ function saveImageName() {
  * Muestra una notificación al usuario
  * @param {string} message - Mensaje a mostrar
  * @param {string} type - Tipo de notificación (success, error, info)
+ * @param {number} [duration=5000] - Duración en milisegundos que la notificación estará visible
  */
-function showNotification(message, type = 'info') {
+function showNotification(message, type = 'info', duration = 3500) {
     // Verificar si ya existe un contenedor de notificaciones
     let notificationContainer = document.getElementById('notificationContainer');
     
@@ -332,28 +333,37 @@ function showNotification(message, type = 'info') {
     // Añadir al contenedor
     notificationContainer.appendChild(notification);
     
+    // Mostrar la notificación (para la animación)
+    setTimeout(() => {
+        notification.classList.add('show');
+    }, 10);
+    
     // Configurar cierre de notificación
-    const closeBtn = notification.querySelector('.notification-close');
-    closeBtn.addEventListener('click', () => {
+    const closeNotification = () => {
+        notification.classList.remove('show');
         notification.classList.add('fade-out');
         setTimeout(() => {
             if (notification.parentNode) {
                 notificationContainer.removeChild(notification);
             }
         }, 300);
+    };
+    
+    const closeBtn = notification.querySelector('.notification-close');
+    closeBtn.addEventListener('click', closeNotification);
+    
+    // Auto-cerrar después de la duración especificada
+    let timeoutId = setTimeout(closeNotification, duration);
+    
+    // Pausar el cierre automático al hacer hover
+    notification.addEventListener('mouseenter', () => {
+        clearTimeout(timeoutId);
     });
     
-    // Auto-cerrar después de 5 segundos
-    setTimeout(() => {
-        if (notification.parentNode) {
-            notification.classList.add('fade-out');
-            setTimeout(() => {
-                if (notification.parentNode) {
-                    notificationContainer.removeChild(notification);
-                }
-            }, 300);
-        }
-    }, 5000);
+    // Reanudar el contador al quitar el hover
+    notification.addEventListener('mouseleave', () => {
+        timeoutId = setTimeout(closeNotification, 1000);
+    });
 }
 
 /**
@@ -361,31 +371,29 @@ function showNotification(message, type = 'info') {
  * @param {string} filename - Nombre del archivo a eliminar
  */
 function deleteImage(filename) {
-    if (confirm('¿Estás seguro de que quieres eliminar esta imagen?')) {
-        fetch(`/delete/${filename}`)
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    // Eliminar elemento del DOM
-                    const imageItem = document.querySelector(`.image-item[data-filename="${filename}"]`);
-                    if (imageItem) {
-                        imageItem.remove();
-                        
-                        // Actualizar contador de imágenes
-                        updateImageCount();
-                        
-                        // Mostrar mensaje de éxito
-                        showNotification('Imagen eliminada correctamente', 'success');
-                    }
-                } else {
-                    showNotification(data.message || 'Error al eliminar la imagen', 'error');
+    fetch(`/delete/${filename}`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Eliminar elemento del DOM
+                const imageItem = document.querySelector(`.image-item[data-filename="${filename}"]`);
+                if (imageItem) {
+                    imageItem.remove();
+                    
+                    // Actualizar contador de imágenes
+                    updateImageCount();
+                    
+                    // Mostrar mensaje de éxito
+                    showNotification('Imagen eliminada correctamente', 'success');
                 }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                showNotification('Error al eliminar la imagen', 'error');
-            });
-    }
+            } else {
+                showNotification(data.message || 'Error al eliminar la imagen', 'error');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            showNotification('Error al eliminar la imagen', 'error');
+        });
 }
 
 /**
