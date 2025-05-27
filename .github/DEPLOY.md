@@ -1,6 +1,6 @@
-# Guía de Despliegue para PITON
+# Guía de Despliegue
 
-Esta guía detalla los pasos para desplegar el Sistema de Gestión de Imágenes PITON en diferentes entornos.
+Esta guía detalla los pasos para desplegar el Sistema de Gestión de Imágenes en windows y linux.
 
 ## Requisitos Previos
 
@@ -56,14 +56,14 @@ sudo apt install -y python3 python3-pip python3-venv nginx supervisor libmagic1
 
 ```bash
 # Crear directorio para la aplicación
-sudo mkdir -p /var/www/piton
-sudo chown $USER:$USER /var/www/piton
+sudo mkdir -p /var/www/python
+sudo chown $USER:$USER /var/www/python
 
 # Clonar el código al servidor
-git clone https://github.com/Vicente-Alejandro/sistema-imagenes-flask /var/www/piton
+git clone https://github.com/Vicente-Alejandro/sistema-imagenes-flask /var/www/python
 
 # Crear entorno virtual
-cd /var/www/piton
+cd /var/www/python
 python3 -m venv venv
 source venv/bin/activate
 
@@ -83,15 +83,15 @@ workers = 3  # (2 x núcleos) + 1
 worker_class = "sync"
 timeout = 120
 keepalive = 5
-errorlog = "/var/www/piton/logs/gunicorn-error.log"
-accesslog = "/var/www/piton/logs/gunicorn-access.log"
+errorlog = "/var/www/python/logs/gunicorn-error.log"
+accesslog = "/var/www/python/logs/gunicorn-access.log"
 loglevel = "info"
 ```
 
 Crea directorios para logs:
 
 ```bash
-mkdir -p /var/www/piton/logs
+mkdir -p /var/www/python/logs
 ```
 
 ### 4. Configuración de Supervisor
@@ -99,19 +99,19 @@ mkdir -p /var/www/piton/logs
 Crea un archivo de configuración para Supervisor:
 
 ```bash
-sudo nano /etc/supervisor/conf.d/piton.conf
+sudo nano /etc/supervisor/conf.d/python.conf
 ```
 
 Añade este contenido:
 
 ```ini
-[program:piton]
-directory=/var/www/piton
-command=/var/www/piton/venv/bin/gunicorn -c gunicorn_config.py "app:create_app()"
+[program:python]
+directory=/var/www/python
+command=/var/www/python/venv/bin/gunicorn -c gunicorn_config.py "app:create_app()"
 autostart=true
 autorestart=true
-stderr_logfile=/var/www/piton/logs/supervisor-error.log
-stdout_logfile=/var/www/piton/logs/supervisor-access.log
+stderr_logfile=/var/www/python/logs/supervisor-error.log
+stdout_logfile=/var/www/python/logs/supervisor-access.log
 user=www-data
 environment=FLASK_ENV=production
 
@@ -124,7 +124,7 @@ Reinicia Supervisor:
 ```bash
 sudo supervisorctl reread
 sudo supervisorctl update
-sudo supervisorctl restart piton
+sudo supervisorctl restart python
 ```
 
 ### 5. Configuración de Nginx
@@ -132,7 +132,7 @@ sudo supervisorctl restart piton
 Crea un archivo de configuración para Nginx:
 
 ```bash
-sudo nano /etc/nginx/sites-available/piton
+sudo nano /etc/nginx/sites-available/python
 ```
 
 Añade este contenido:
@@ -152,12 +152,12 @@ server {
     }
 
     location /static/ {
-        alias /var/www/piton/app/static/;
+        alias /var/www/python/app/static/;
         expires 30d;
     }
 
     location /uploads/ {
-        alias /var/www/piton/uploads/;
+        alias /var/www/python/uploads/;
         expires 30d;
     }
 
@@ -168,7 +168,7 @@ server {
 Habilita el sitio y reinicia Nginx:
 
 ```bash
-sudo ln -s /etc/nginx/sites-available/piton /etc/nginx/sites-enabled/
+sudo ln -s /etc/nginx/sites-available/python /etc/nginx/sites-enabled/
 sudo nginx -t  # Verifica la configuración
 sudo systemctl restart nginx
 ```
@@ -188,9 +188,9 @@ sudo certbot --nginx -d tudominio.com
 
 2. **Problemas de permisos**
    ```bash
-   sudo chown -R www-data:www-data /var/www/piton
-   sudo chmod -R 755 /var/www/piton
-   sudo chmod -R 775 /var/www/piton/uploads
+   sudo chown -R www-data:www-data /var/www/python
+   sudo chmod -R 755 /var/www/python
+   sudo chmod -R 775 /var/www/python/uploads
    ```
 
 3. **Error 502 Bad Gateway**
@@ -202,9 +202,9 @@ sudo certbot --nginx -d tudominio.com
 Para actualizar la aplicación a una nueva versión:
 
 ```bash
-cd /var/www/piton
+cd /var/www/python
 git pull
 source venv/bin/activate
 pip install -r requirements.txt
-sudo supervisorctl restart piton
+sudo supervisorctl restart python
 ```
