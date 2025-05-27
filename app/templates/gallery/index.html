@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+
+{% block title %}Galería de Imágenes{% endblock %}
+
+{% block header_title %}📁 Galería de Imágenes 🥷🙏{% endblock %}
+
+{% block styles %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/gallery.css') }}">
+{% endblock %}
+
+{% block content %}
+    <div class="upload-form">
+        <form id="uploadForm" enctype="multipart/form-data">
+            <input type="file" name="files" id="fileInput" accept="image/*" class="file-input" multiple required>
+            <button type="submit" class="upload-btn">Subir Imágenes</button>
+        </form>
+        <div class="upload-info">
+            Puedes seleccionar múltiples imágenes manteniendo Ctrl (Windows) o Cmd (Mac)
+        </div>
+    </div>
+    
+    {% if images %}
+    <div class="stats" id="imageStats">
+        Total de imágenes: {{ images|length }}
+    </div>
+    
+    <div class="gallery" id="gallery">
+        {% for image in images %}
+        <div class="image-item" data-filename="{{ image.filename }}">
+            <div class="thumbnail-container">
+                <img src="data:image/svg+xml;charset=utf-8,%3Csvg xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg' viewBox%3D'0 0 200 200'%2F%3E" 
+                     data-src="/uploads/{{ image.filename }}" 
+                     alt="{{ image.original_filename }}" 
+                     class="thumbnail lazy" 
+                     onclick="window.open('/uploads/{{ image.filename }}', '_blank')">
+                <div class="loading-spinner"></div>
+            </div>
+            <div class="image-name">{{ image.original_filename }}</div>
+            <div class="actions">
+                <a href="/uploads/{{ image.filename }}" target="_blank" class="view-btn">Ver</a>
+                <button onclick="deleteImage('{{ image.filename }}')" class="delete-btn">Eliminar</button>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="no-images" id="noImages">
+        No hay imágenes subidas. ¡Sube la primera!
+    </div>
+    {% endif %}
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/gallery.js') }}"></script>
+{% endblock %}
