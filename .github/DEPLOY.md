@@ -1,4 +1,4 @@
-# Guía de Despliegue para PITON
+# Guía de Despliegue
 
 Esta guía detalla los pasos para desplegar el Sistema de Gestión de Imágenes PITON en diferentes entornos.
 
