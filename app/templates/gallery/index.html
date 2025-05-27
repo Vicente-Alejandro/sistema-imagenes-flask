@@ -24,6 +24,17 @@
         Total de imágenes: {{ images|length }}
     </div>
     
+    <!-- Modal/Lightbox para vista de imagen completa -->
+    <div id="imageModal" class="modal">
+        <span class="close-modal">&times;</span>
+        <img id="modalImage" class="modal-content">
+        <div id="modalCaption"></div>
+        <div class="modal-nav">
+            <button id="prevImage" class="nav-btn prev-btn">&laquo; Anterior</button>
+            <button id="nextImage" class="nav-btn next-btn">Siguiente &raquo;</button>
+        </div>
+    </div>
+    
     <div class="gallery" id="gallery">
         {% for image in images %}
         <div class="image-item" data-filename="{{ image.filename }}">
@@ -32,12 +43,12 @@
                      data-src="/uploads/{{ image.filename }}" 
                      alt="{{ image.original_filename }}" 
                      class="thumbnail lazy" 
-                     onclick="window.open('/uploads/{{ image.filename }}', '_blank')">
+                     onclick="openImageModal('/uploads/{{ image.filename }}', '{{ image.original_filename }}')">
                 <div class="loading-spinner"></div>
             </div>
-            <div class="image-name">{{ image.original_filename }}</div>
+            <div class="image-name">{{ image.filename }}</div>
             <div class="actions">
-                <a href="/uploads/{{ image.filename }}" target="_blank" class="view-btn">Ver</a>
+                <button onclick="openImageModal('/uploads/{{ image.filename }}', '{{ image.original_filename }}')" class="view-btn">Ver</button>
                 <button onclick="deleteImage('{{ image.filename }}')" class="delete-btn">Eliminar</button>
             </div>
         </div>

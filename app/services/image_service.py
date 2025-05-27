@@ -4,6 +4,8 @@ from app.services.file_service import FileServiceInterface
 import os
 import json
 import tempfile
+import uuid
+import datetime
 from PIL import Image as PILImage
 import shutil
 import io
@@ -114,6 +116,7 @@ class ImageService(ImageServiceInterface):
         """
         Sube una imagen, la convierte a WebP y devuelve el objeto Image creado.
         Delega el almacenamiento real al file_service.
+        Genera nombres aleatorios tanto para el archivo guardado como para el nombre original.
         """
         # Crear un archivo temporal para la imagen original
         with tempfile.NamedTemporaryFile(delete=False) as temp_file:
@@ -124,11 +127,24 @@ class ImageService(ImageServiceInterface):
             temp_path = temp_file.name
         
         try:
-            # Generar nombre único para la imagen WebP
+            # Obtener la extensión del archivo original
             ext = original_filename.rsplit('.', 1)[1].lower() if '.' in original_filename else ''
-            base_filename = self.file_service.generate_unique_filename(original_filename)
-            base_filename_without_ext = base_filename.rsplit('.', 1)[0] if '.' in base_filename else base_filename
-            webp_filename = f"{base_filename_without_ext}.webp"
+            
+            # Obtener fecha y hora actual
+            now = datetime.datetime.now()
+            date_time_str = now.strftime("%H%M_%d%m%Y")
+            
+            # Generar parte aleatoria (32 caracteres)
+            random_part = uuid.uuid4().hex[:32]
+            
+            # Crear nombre base con formato: 32caracteresaleatorios-HHMM_DDMMYYYY
+            formatted_name = f"{random_part}-{date_time_str}"
+            
+            # Generar nombre único para la imagen WebP
+            webp_filename = f"{formatted_name}.webp"
+            
+            # Generar un nombre aleatorio para el nombre original también
+            random_original_filename = f"{formatted_name}.{ext}" if ext else formatted_name
             
             # Ruta completa para el archivo WebP
             webp_path = os.path.join(self.file_service.upload_folder, webp_filename)
@@ -143,8 +159,8 @@ class ImageService(ImageServiceInterface):
             else:
                 filename = webp_filename
             
-            # Crear y guardar metadatos
-            image = Image(filename=filename, original_filename=original_filename)
+            # Crear y guardar metadatos (usando el nombre original aleatorio)
+            image = Image(filename=filename, original_filename=random_original_filename)
             self._metadata[filename] = image
             self._save_metadata()
             

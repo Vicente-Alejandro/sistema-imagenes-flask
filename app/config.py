@@ -7,6 +7,13 @@ from dotenv import load_dotenv
 basedir = os.path.abspath(os.path.dirname(os.path.dirname(__file__)))
 load_dotenv(os.path.join(basedir, '.env'))
 
+# Obtener host y puerto de las variables de entorno
+HOST = os.environ.get('HOST', '0.0.0.0')
+try:
+    PORT = int(os.environ.get('PORT', 3000))
+except (ValueError, TypeError):
+    PORT = 3000
+
 class Config:
     """Clase base de configuración para la aplicación"""
     # Nombre de la aplicación
@@ -63,30 +70,85 @@ class Config:
 class DevelopmentConfig(Config):
     """Configuración para entorno de desarrollo"""
     DEBUG = True
+    TESTING = False
     
     @classmethod
     def init_app(cls, app):
         Config.init_app(app)
         app.logger.info('Aplicación iniciada en modo DESARROLLO')
+        
+        # Mostrar advertencias de desarrollo
+        if not cls.SECRET_KEY or cls.SECRET_KEY == cls.generate_dev_key():
+            app.logger.warning(
+                "ADVERTENCIA: Usando una SECRET_KEY temporal en desarrollo. "
+                "Para mayor seguridad, configura SECRET_KEY en el archivo .env"
+            )
+
+    @staticmethod
+    def generate_dev_key():
+        """Genera una clave temporal para desarrollo"""
+        return secrets.token_hex(32)
+
+class TestingConfig(Config):
+    """Configuración para entorno de pruebas"""
+    DEBUG = False
+    TESTING = True
+    # Usar una carpeta temporal para las pruebas
+    UPLOAD_FOLDER = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'tests', 'uploads')
+    
+    @classmethod
+    def init_app(cls, app):
+        Config.init_app(app)
+        app.logger.info('Aplicación iniciada en modo PRUEBAS')
 
 class ProductionConfig(Config):
     """Configuración para entorno de producción"""
     DEBUG = False
+    TESTING = False
     
     # Verificar que exista una SECRET_KEY en producción
     @classmethod
     def init_app(cls, app):
-        Config.init_app(app) if hasattr(Config, 'init_app') else None
+        Config.init_app(app)
+        app.logger.info('Aplicación iniciada en modo PRODUCCIÓN')
         
         # Verificación de seguridad para producción
-        if not os.environ.get('SECRET_KEY'):
-            raise RuntimeError(
-                'ERROR DE SEGURIDAD: La variable de entorno SECRET_KEY no está configurada. ' +
-                'Esto es obligatorio en entornos de producción.'
+        if not cls.SECRET_KEY or cls.SECRET_KEY == 'tu_clave_secreta_aqui':
+            app.logger.error(
+                "ERROR: No se ha configurado una SECRET_KEY para producción. "
+                "Esto es un riesgo de seguridad. Configura SECRET_KEY en el archivo .env"
+            )
+            raise ValueError(
+                "La SECRET_KEY no está configurada para el entorno de producción. "
+                "Por favor, configura una SECRET_KEY segura en el archivo .env"
             )
 
-class TestingConfig(Config):
-    """Configuración para entorno de pruebas"""
-    TESTING = True
-    # Usar una carpeta temporal para las pruebas
-    UPLOAD_FOLDER = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'tests', 'uploads')
+# Mapa de configuraciones disponibles
+config_map = {
+    'development': DevelopmentConfig,
+    'testing': TestingConfig,
+    'production': ProductionConfig
+}
+
+
+def get_config():
+    """Obtiene la configuración adecuada basada en las variables de entorno
+    
+    Returns:
+        object: La clase de configuración adecuada para el entorno actual
+    """
+    # Determinar la configuración basada en FLASK_ENV
+    env = os.environ.get('FLASK_ENV', 'development').lower()
+    
+    # Usar la configuración correspondiente al entorno o DevelopmentConfig como fallback
+    config_class = config_map.get(env, DevelopmentConfig)
+    
+    # Obtener el modo debug de las variables de entorno
+    # Si está especificado en .env, se usa ese valor, de lo contrario se usa el valor de la clase
+    debug_env = os.environ.get('DEBUG', '').lower()
+    if debug_env in ('true', 't', '1', 'yes', 'y'):
+        config_class.DEBUG = True
+    elif debug_env in ('false', 'f', '0', 'no', 'n'):
+        config_class.DEBUG = False
+        
+    return config_class

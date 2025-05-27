@@ -2,6 +2,99 @@
  * Funciones específicas para la galería de imágenes
  */
 
+// Variables globales para el modal/lightbox
+let currentImageIndex = 0;
+let galleryImages = [];
+
+/**
+ * Abre el modal con la imagen seleccionada
+ * @param {string} imageSrc - Ruta de la imagen
+ * @param {string} caption - Descripción/título de la imagen
+ */
+function openImageModal(imageSrc, caption) {
+    const modal = document.getElementById('imageModal');
+    const modalImg = document.getElementById('modalImage');
+    const modalCaption = document.getElementById('modalCaption');
+    
+    // Mostrar el modal
+    modal.style.display = 'block';
+    
+    // Establecer imagen y texto
+    modalImg.src = imageSrc;
+    modalCaption.textContent = caption;
+    
+    // Recopilar todas las imágenes para navegación
+    galleryImages = Array.from(document.querySelectorAll('.thumbnail'));
+    
+    // Encontrar el índice de la imagen actual
+    const thumbnails = document.querySelectorAll('.thumbnail');
+    for (let i = 0; i < thumbnails.length; i++) {
+        const imgSrc = thumbnails[i].getAttribute('data-src');
+        if (imgSrc === imageSrc) {
+            currentImageIndex = i;
+            break;
+        }
+    }
+    
+    // Mostrar/ocultar botones de navegación según sea necesario
+    updateNavigationButtons();
+}
+
+/**
+ * Actualiza la visibilidad de los botones de navegación
+ */
+function updateNavigationButtons() {
+    const prevButton = document.getElementById('prevImage');
+    const nextButton = document.getElementById('nextImage');
+    
+    // Ocultar botón 'Anterior' si estamos en la primera imagen
+    prevButton.style.visibility = currentImageIndex > 0 ? 'visible' : 'hidden';
+    
+    // Ocultar botón 'Siguiente' si estamos en la última imagen
+    nextButton.style.visibility = currentImageIndex < galleryImages.length - 1 ? 'visible' : 'hidden';
+}
+
+/**
+ * Navega a la imagen anterior
+ */
+function showPreviousImage() {
+    if (currentImageIndex > 0) {
+        currentImageIndex--;
+        const prevImage = galleryImages[currentImageIndex];
+        const imageSrc = prevImage.getAttribute('data-src');
+        const caption = prevImage.getAttribute('alt');
+        
+        document.getElementById('modalImage').src = imageSrc;
+        document.getElementById('modalCaption').textContent = caption;
+        
+        updateNavigationButtons();
+    }
+}
+
+/**
+ * Navega a la imagen siguiente
+ */
+function showNextImage() {
+    if (currentImageIndex < galleryImages.length - 1) {
+        currentImageIndex++;
+        const nextImage = galleryImages[currentImageIndex];
+        const imageSrc = nextImage.getAttribute('data-src');
+        const caption = nextImage.getAttribute('alt');
+        
+        document.getElementById('modalImage').src = imageSrc;
+        document.getElementById('modalCaption').textContent = caption;
+        
+        updateNavigationButtons();
+    }
+}
+
+/**
+ * Cierra el modal de imagen
+ */
+function closeImageModal() {
+    document.getElementById('imageModal').style.display = 'none';
+}
+
 // Manejo del formulario de subida
 /**
  * Inicializa el lazy loading de imágenes usando Intersection Observer
@@ -58,6 +151,41 @@ function initLazyLoading() {
 document.addEventListener('DOMContentLoaded', function() {
     // Inicializar lazy loading
     initLazyLoading();
+    
+    // Configurar eventos para el modal de imágenes
+    const modal = document.getElementById('imageModal');
+    const closeBtn = document.querySelector('.close-modal');
+    const prevBtn = document.getElementById('prevImage');
+    const nextBtn = document.getElementById('nextImage');
+    
+    if (modal && closeBtn) {
+        // Cerrar modal al hacer clic en X
+        closeBtn.addEventListener('click', closeImageModal);
+        
+        // Cerrar modal al hacer clic fuera de la imagen
+        modal.addEventListener('click', function(e) {
+            if (e.target === modal) {
+                closeImageModal();
+            }
+        });
+        
+        // Navegación con teclado
+        document.addEventListener('keydown', function(e) {
+            if (modal.style.display === 'block') {
+                if (e.key === 'Escape') {
+                    closeImageModal();
+                } else if (e.key === 'ArrowLeft') {
+                    showPreviousImage();
+                } else if (e.key === 'ArrowRight') {
+                    showNextImage();
+                }
+            }
+        });
+        
+        // Botones de navegación
+        if (prevBtn) prevBtn.addEventListener('click', showPreviousImage);
+        if (nextBtn) nextBtn.addEventListener('click', showNextImage);
+    }
     
     const uploadForm = document.getElementById('uploadForm');
     if (uploadForm) {
@@ -138,12 +266,12 @@ function addNewImages(filenames) {
                      data-src="/uploads/${filename}" 
                      alt="${filename}" 
                      class="thumbnail lazy" 
-                     onclick="window.open('/uploads/${filename}', '_blank')">
+                     onclick="openImageModal('/uploads/${filename}', '${filename}')">
                 <div class="loading-spinner"></div>
             </div>
             <div class="image-name">${filename}</div>
             <div class="actions">
-                <a href="/uploads/${filename}" target="_blank" class="view-btn">Ver</a>
+                <button onclick="openImageModal('/uploads/${filename}', '${filename}')" class="view-btn">Ver</button>
                 <button onclick="deleteImage('${filename}')" class="delete-btn">Eliminar</button>
             </div>
         `;
