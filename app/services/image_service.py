@@ -215,3 +215,12 @@ class ImageService(ImageServiceInterface):
     def get_image(self, filename: str) -> Optional[Image]:
         """Obtiene una imagen específica por su nombre de archivo"""
         return self._metadata.get(filename)
+        
+    def update_image_name(self, filename: str, new_original_filename: str) -> Optional[Image]:
+        """Actualiza el nombre original de una imagen existente"""
+        image = self._metadata.get(filename)
+        if image:
+            image.original_filename = new_original_filename
+            self._save_metadata()
+            return image
+        return None

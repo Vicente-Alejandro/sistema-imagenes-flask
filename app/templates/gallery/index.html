@@ -19,6 +19,30 @@
         </div>
     </div>
     
+    <!-- Sección de búsqueda y filtros -->
+    <div class="search-filter-section">
+        <div class="search-box">
+            <input type="text" id="imageSearch" placeholder="Buscar por nombre..." class="search-input">
+            <button id="searchButton" class="search-btn"><i class="fa fa-search"></i></button>
+        </div>
+        <div class="filter-options">
+            <div class="filter-group">
+                <label for="sortBy">Ordenar por:</label>
+                <select id="sortBy" class="filter-select">
+                    <option value="default">Por defecto</option>
+                    <option value="name">Nombre</option>
+                    <option value="date">Fecha</option>
+                </select>
+                <button id="orderToggle" class="order-toggle">&#8593;</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Mensaje de no resultados para búsqueda -->
+    <div id="noSearchResults" class="no-search-results" style="display: none;">
+        No se encontraron resultados para tu búsqueda.
+    </div>
+    
     {% if images %}
     <div class="stats" id="imageStats">
         Total de imágenes: {{ images|length }}
@@ -32,6 +56,26 @@
         <div class="modal-nav">
             <button id="prevImage" class="nav-btn prev-btn">&laquo; Anterior</button>
             <button id="nextImage" class="nav-btn next-btn">Siguiente &raquo;</button>
+            <button id="downloadImage" class="nav-btn download-btn">Descargar</button>
+        </div>
+    </div>
+    
+    <!-- Modal para editar nombre de imagen -->
+    <div id="editNameModal" class="modal edit-modal">
+        <div class="modal-content edit-modal-content">
+            <span class="close-edit-modal">&times;</span>
+            <h2>Editar nombre de imagen</h2>
+            <form id="editNameForm">
+                <input type="hidden" id="editImageFilename">
+                <div class="form-group">
+                    <label for="newImageName">Nuevo nombre:</label>
+                    <input type="text" id="newImageName" class="form-control" required>
+                </div>
+                <div class="form-actions">
+                    <button type="submit" class="save-btn">Guardar cambios</button>
+                    <button type="button" class="cancel-btn" onclick="closeEditNameModal()">Cancelar</button>
+                </div>
+            </form>
         </div>
     </div>
     
@@ -49,6 +93,7 @@
             <div class="image-name">{{ image.filename }}</div>
             <div class="actions">
                 <button onclick="openImageModal('/uploads/{{ image.filename }}', '{{ image.original_filename }}')" class="view-btn">Ver</button>
+                <button onclick="editImageName('{{ image.filename }}', '{{ image.original_filename }}')" class="edit-btn">Editar</button>
                 <button onclick="deleteImage('{{ image.filename }}')" class="delete-btn">Eliminar</button>
             </div>
         </div>

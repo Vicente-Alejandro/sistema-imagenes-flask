@@ -33,3 +33,9 @@ def delete_file(filename):
     """Ruta para eliminar una imagen"""
     response, status_code = image_controller.delete_image(filename)
     return jsonify(response), status_code
+
+@image_bp.route('/update-name/<filename>', methods=['PUT'])
+def update_image_name(filename):
+    """Ruta para actualizar el nombre de una imagen"""
+    response, status_code = image_controller.update_image_name(filename)
+    return jsonify(response), status_code

@@ -76,3 +76,30 @@ class ImageController:
         except Exception as e:
             current_app.logger.error(f"Error eliminando archivo {filename}: {e}")
             return {'success': False, 'message': f'Error eliminando archivo: {str(e)}'}, 500
+            
+    def update_image_name(self, filename: str) -> Tuple[Dict[str, Any], int]:
+        """
+        Controlador para actualizar el nombre de una imagen.
+        Toma el nuevo nombre del formulario y actualiza los metadatos.
+        """
+        try:
+            data = request.get_json()
+            if not data or 'new_name' not in data:
+                return {'success': False, 'message': 'No se proporcionó un nuevo nombre'}, 400
+                
+            new_name = data['new_name']
+            if not new_name or len(new_name.strip()) == 0:
+                return {'success': False, 'message': 'El nombre no puede estar vacío'}, 400
+                
+            updated_image = self.image_service.update_image_name(filename, new_name)
+            if updated_image:
+                return {
+                    'success': True, 
+                    'message': 'Nombre de imagen actualizado correctamente',
+                    'image': updated_image.to_dict()
+                }, 200
+            else:
+                return {'success': False, 'message': 'No se encontró la imagen'}, 404
+        except Exception as e:
+            current_app.logger.error(f"Error actualizando nombre de imagen {filename}: {e}")
+            return {'success': False, 'message': f'Error actualizando nombre: {str(e)}'}, 500

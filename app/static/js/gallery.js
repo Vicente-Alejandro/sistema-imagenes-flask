@@ -2,9 +2,85 @@
  * Funciones específicas para la galería de imágenes
  */
 
-// Variables globales para el modal/lightbox
-let currentImageIndex = 0;
-let galleryImages = [];
+// Variables globales - definidas como window.variables para garantizar alcance global
+window.currentIndex = 0;
+window.images = [];
+window.currentFilters = {
+    search: '',
+    sortBy: 'default',
+    order: 'asc'
+};
+
+/**
+ * Inicializa la carga diferida de imágenes
+ */
+function initLazyLoading() {
+    const lazyImages = document.querySelectorAll('.lazy');
+    
+    if ('IntersectionObserver' in window) {
+        const imageObserver = new IntersectionObserver((entries, observer) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    const img = entry.target;
+                    img.src = img.dataset.src;
+                    img.classList.add('loaded');
+                    
+                    // Ocultar spinner cuando la imagen está cargada
+                    img.onload = function() {
+                        const spinner = img.nextElementSibling;
+                        if (spinner && spinner.classList.contains('loading-spinner')) {
+                            spinner.style.display = 'none';
+                        }
+                    };
+                }
+            });
+        });
+        
+        lazyImages.forEach(img => {
+            imageObserver.observe(img);
+        });
+    } else {
+        // Fallback para navegadores que no soportan IntersectionObserver
+        let lazyLoadThrottleTimeout;
+        
+        function lazyLoad() {
+            if (lazyLoadThrottleTimeout) {
+                clearTimeout(lazyLoadThrottleTimeout);
+            }
+            
+            lazyLoadThrottleTimeout = setTimeout(function() {
+                const scrollTop = window.pageYOffset;
+                lazyImages.forEach(img => {
+                    if (img.offsetTop < (window.innerHeight + scrollTop)) {
+                        img.src = img.dataset.src;
+                        img.classList.add('loaded');
+                        
+                        // Ocultar spinner cuando la imagen está cargada
+                        img.onload = function() {
+                            const spinner = img.nextElementSibling;
+                            if (spinner && spinner.classList.contains('loading-spinner')) {
+                                spinner.style.display = 'none';
+                            }
+                        };
+                    }
+                });
+                
+                if (lazyImages.length == 0) { 
+                    document.removeEventListener("scroll", lazyLoad);
+                    window.removeEventListener("resize", lazyLoad);
+                    window.removeEventListener("orientationChange", lazyLoad);
+                }
+            }, 20);
+        }
+        
+        document.addEventListener("scroll", lazyLoad);
+        window.addEventListener("resize", lazyLoad);
+        window.addEventListener("orientationChange", lazyLoad);
+        
+        // Llamar a lazyLoad inmediatamente
+        lazyLoad();
+    }
+}
 
 /**
  * Abre el modal con la imagen seleccionada
@@ -15,6 +91,7 @@ function openImageModal(imageSrc, caption) {
     const modal = document.getElementById('imageModal');
     const modalImg = document.getElementById('modalImage');
     const modalCaption = document.getElementById('modalCaption');
+    const downloadBtn = document.getElementById('downloadImage');
     
     // Mostrar el modal
     modal.style.display = 'block';
@@ -23,20 +100,103 @@ function openImageModal(imageSrc, caption) {
     modalImg.src = imageSrc;
     modalCaption.textContent = caption;
     
-    // Recopilar todas las imágenes para navegación
-    galleryImages = Array.from(document.querySelectorAll('.thumbnail'));
+    // Configurar botón de descarga
+    if (downloadBtn) {
+        downloadBtn.onclick = function() {
+            downloadImage(imageSrc, caption);
+        };
+    }
+    
+    // Recopilar todas las imágenes para navegación (solo las visibles)
+    window.images = Array.from(document.querySelectorAll('.thumbnail:not(.hidden)'));
     
     // Encontrar el índice de la imagen actual
-    const thumbnails = document.querySelectorAll('.thumbnail');
-    for (let i = 0; i < thumbnails.length; i++) {
-        const imgSrc = thumbnails[i].getAttribute('data-src');
+    window.currentIndex = 0;
+    for (let i = 0; i < window.images.length; i++) {
+        const imgSrc = window.images[i].getAttribute('data-src');
         if (imgSrc === imageSrc) {
-            currentImageIndex = i;
+            window.currentIndex = i;
             break;
         }
     }
     
     // Mostrar/ocultar botones de navegación según sea necesario
+    updateNavigationButtons();
+}
+
+/**
+ * Cierra el modal de imagen
+ */
+function closeImageModal() {
+    const modal = document.getElementById('imageModal');
+    modal.style.display = 'none';
+}
+
+/**
+ * Descarga la imagen actual
+ * @param {string} src - Ruta de la imagen
+ * @param {string} filename - Nombre de la imagen
+ */
+function downloadImage(src, filename) {
+    const link = document.createElement('a');
+    link.href = src;
+    link.download = filename;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+}
+
+/**
+ * Navega a la imagen anterior
+ */
+function showPreviousImage() {
+    if (window.images.length <= 1) return;
+    
+    window.currentIndex = (window.currentIndex - 1 + window.images.length) % window.images.length;
+    const prevImg = window.images[window.currentIndex];
+    const src = prevImg.getAttribute('data-src');
+    const caption = prevImg.getAttribute('alt');
+    
+    const modalImg = document.getElementById('modalImage');
+    const captionText = document.getElementById('modalCaption');
+    const downloadBtn = document.getElementById('downloadImage');
+    
+    modalImg.src = src;
+    captionText.textContent = caption;
+    
+    if (downloadBtn) {
+        downloadBtn.onclick = function() {
+            downloadImage(src, caption);
+        };
+    }
+    
+    updateNavigationButtons();
+}
+
+/**
+ * Navega a la imagen siguiente
+ */
+function showNextImage() {
+    if (window.images.length <= 1) return;
+    
+    window.currentIndex = (window.currentIndex + 1) % window.images.length;
+    const nextImg = window.images[window.currentIndex];
+    const src = nextImg.getAttribute('data-src');
+    const caption = nextImg.getAttribute('alt');
+    
+    const modalImg = document.getElementById('modalImage');
+    const captionText = document.getElementById('modalCaption');
+    const downloadBtn = document.getElementById('downloadImage');
+    
+    modalImg.src = src;
+    captionText.textContent = caption;
+    
+    if (downloadBtn) {
+        downloadBtn.onclick = function() {
+            downloadImage(src, caption);
+        };
+    }
+    
     updateNavigationButtons();
 }
 
@@ -47,107 +207,365 @@ function updateNavigationButtons() {
     const prevButton = document.getElementById('prevImage');
     const nextButton = document.getElementById('nextImage');
     
+    if (!prevButton || !nextButton) return;
+    
     // Ocultar botón 'Anterior' si estamos en la primera imagen
-    prevButton.style.visibility = currentImageIndex > 0 ? 'visible' : 'hidden';
+    prevButton.style.visibility = window.currentIndex > 0 ? 'visible' : 'hidden';
     
     // Ocultar botón 'Siguiente' si estamos en la última imagen
-    nextButton.style.visibility = currentImageIndex < galleryImages.length - 1 ? 'visible' : 'hidden';
+    nextButton.style.visibility = window.currentIndex < window.images.length - 1 ? 'visible' : 'hidden';
 }
 
 /**
- * Navega a la imagen anterior
+ * Edita el nombre de la imagen
+ * @param {string} filename - Nombre del archivo de la imagen
+ * @param {string} currentName - Nombre actual de la imagen
  */
-function showPreviousImage() {
-    if (currentImageIndex > 0) {
-        currentImageIndex--;
-        const prevImage = galleryImages[currentImageIndex];
-        const imageSrc = prevImage.getAttribute('data-src');
-        const caption = prevImage.getAttribute('alt');
-        
-        document.getElementById('modalImage').src = imageSrc;
-        document.getElementById('modalCaption').textContent = caption;
-        
-        updateNavigationButtons();
-    }
-}
-
-/**
- * Navega a la imagen siguiente
- */
-function showNextImage() {
-    if (currentImageIndex < galleryImages.length - 1) {
-        currentImageIndex++;
-        const nextImage = galleryImages[currentImageIndex];
-        const imageSrc = nextImage.getAttribute('data-src');
-        const caption = nextImage.getAttribute('alt');
-        
-        document.getElementById('modalImage').src = imageSrc;
-        document.getElementById('modalCaption').textContent = caption;
-        
-        updateNavigationButtons();
-    }
-}
-
-/**
- * Cierra el modal de imagen
- */
-function closeImageModal() {
-    document.getElementById('imageModal').style.display = 'none';
-}
-
-// Manejo del formulario de subida
-/**
- * Inicializa el lazy loading de imágenes usando Intersection Observer
- */
-function initLazyLoading() {
-    const lazyImages = document.querySelectorAll('img.lazy');
+function editImageName(filename, currentName) {
+    // Mostrar el modal de edición
+    const modal = document.getElementById('editNameModal');
+    const nameInput = document.getElementById('newImageName');
+    const filenameInput = document.getElementById('editImageFilename');
     
-    // Si el navegador soporta IntersectionObserver
-    if ('IntersectionObserver' in window) {
-        const imageObserver = new IntersectionObserver(function(entries, observer) {
-            entries.forEach(function(entry) {
-                if (entry.isIntersecting) {
-                    const img = entry.target;
-                    const src = img.dataset.src;
-                    
-                    // Crear una imagen oculta para precargar
-                    const preloadImage = new Image();
-                    preloadImage.src = src;
-                    preloadImage.onload = function() {
-                        // Una vez que la imagen se ha cargado, actualizar la imagen visible
-                        img.src = src;
-                        img.classList.add('loaded');
-                        
-                        // Ocultar el spinner
-                        const spinner = img.parentNode.querySelector('.loading-spinner');
-                        if (spinner) {
-                            spinner.style.display = 'none';
-                        }
-                    };
-                    
-                    // Ya no necesitamos observar esta imagen
-                    imageObserver.unobserve(img);
-                }
-            });
-        }, {
-            // Opciones del observador
-            rootMargin: '50px 0px',  // Empieza a cargar cuando está a 50px de entrar en pantalla
-            threshold: 0.01          // Trigger cuando al menos 1% de la imagen es visible
-        });
-        
-        // Observar todas las imágenes con clase 'lazy'
-        lazyImages.forEach(function(img) {
-            imageObserver.observe(img);
-        });
-    } else {
-        // Fallback para navegadores que no soportan IntersectionObserver
-        lazyImages.forEach(function(img) {
-            img.src = img.dataset.src;
-            img.classList.add('loaded');
-        });
+    if (!modal || !nameInput || !filenameInput) return;
+    
+    // Establecer valores actuales
+    nameInput.value = currentName;
+    filenameInput.value = filename;
+    
+    // Mostrar modal
+    modal.style.display = "block";
+    nameInput.focus();
+}
+
+/**
+ * Cierra el modal de edición de nombre
+ */
+function closeEditNameModal() {
+    const modal = document.getElementById('editNameModal');
+    if (modal) {
+        modal.style.display = "none";
     }
 }
 
+/**
+ * Guarda el nuevo nombre de la imagen
+ */
+function saveImageName() {
+    const filename = document.getElementById('editImageFilename').value;
+    const newName = document.getElementById('newImageName').value;
+    
+    if (!filename || !newName || newName.trim() === '') {
+        alert('Por favor ingresa un nombre válido');
+        return false;
+    }
+    
+    // Realizar petición para actualizar el nombre
+    fetch(`/update-name/${filename}`, {
+        method: 'PUT',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ new_name: newName })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // Actualizar la UI
+            const imageItem = document.querySelector(`.image-item[data-filename="${filename}"]`);
+            if (imageItem) {
+                const viewBtn = imageItem.querySelector('.view-btn');
+                const editBtn = imageItem.querySelector('.edit-btn');
+                
+                // Actualizar botones con el nuevo nombre
+                if (viewBtn) {
+                    viewBtn.setAttribute('onclick', `openImageModal('/uploads/${filename}', '${newName}')`);
+                }
+                
+                if (editBtn) {
+                    editBtn.setAttribute('onclick', `editImageName('${filename}', '${newName}')`);
+                }
+                
+                // Cerrar modal
+                closeEditNameModal();
+                
+                // Mostrar mensaje de éxito
+                showNotification('Nombre actualizado correctamente', 'success');
+            }
+        } else {
+            showNotification(data.message || 'Error al actualizar el nombre', 'error');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        showNotification('Error al actualizar el nombre', 'error');
+    });
+    
+    return false;
+}
+
+/**
+ * Muestra una notificación al usuario
+ * @param {string} message - Mensaje a mostrar
+ * @param {string} type - Tipo de notificación (success, error, info)
+ */
+function showNotification(message, type = 'info') {
+    // Verificar si ya existe un contenedor de notificaciones
+    let notificationContainer = document.getElementById('notificationContainer');
+    
+    if (!notificationContainer) {
+        // Crear el contenedor si no existe
+        notificationContainer = document.createElement('div');
+        notificationContainer.id = 'notificationContainer';
+        notificationContainer.className = 'notification-container';
+        document.body.appendChild(notificationContainer);
+    }
+    
+    // Crear la notificación
+    const notification = document.createElement('div');
+    notification.className = `notification ${type}`;
+    notification.innerHTML = `
+        <div class="notification-content">${message}</div>
+        <span class="notification-close">&times;</span>
+    `;
+    
+    // Añadir al contenedor
+    notificationContainer.appendChild(notification);
+    
+    // Configurar cierre de notificación
+    const closeBtn = notification.querySelector('.notification-close');
+    closeBtn.addEventListener('click', () => {
+        notification.classList.add('fade-out');
+        setTimeout(() => {
+            if (notification.parentNode) {
+                notificationContainer.removeChild(notification);
+            }
+        }, 300);
+    });
+    
+    // Auto-cerrar después de 5 segundos
+    setTimeout(() => {
+        if (notification.parentNode) {
+            notification.classList.add('fade-out');
+            setTimeout(() => {
+                if (notification.parentNode) {
+                    notificationContainer.removeChild(notification);
+                }
+            }, 300);
+        }
+    }, 5000);
+}
+
+/**
+ * Elimina una imagen
+ * @param {string} filename - Nombre del archivo a eliminar
+ */
+function deleteImage(filename) {
+    if (confirm('¿Estás seguro de que quieres eliminar esta imagen?')) {
+        fetch(`/delete/${filename}`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Eliminar elemento del DOM
+                    const imageItem = document.querySelector(`.image-item[data-filename="${filename}"]`);
+                    if (imageItem) {
+                        imageItem.remove();
+                        
+                        // Actualizar contador de imágenes
+                        updateImageCount();
+                        
+                        // Mostrar mensaje de éxito
+                        showNotification('Imagen eliminada correctamente', 'success');
+                    }
+                } else {
+                    showNotification(data.message || 'Error al eliminar la imagen', 'error');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showNotification('Error al eliminar la imagen', 'error');
+            });
+    }
+}
+
+/**
+ * Actualiza el contador de imágenes
+ */
+function updateImageCount() {
+    const gallery = document.getElementById('gallery');
+    if (gallery) {
+        const count = gallery.querySelectorAll('.image-item').length;
+        let stats = document.getElementById('imageStats');
+        
+        if (count === 0) {
+            // Si no hay imágenes, mostrar mensaje "No hay imágenes"
+            let noImages = document.getElementById('noImages');
+            if (!noImages) {
+                noImages = document.createElement('div');
+                noImages.id = 'noImages';
+                noImages.className = 'no-images';
+                noImages.textContent = 'No hay imágenes subidas. ¡Sube la primera!';
+                gallery.parentNode.insertBefore(noImages, gallery.nextSibling);
+            }
+            
+            // Ocultar galería
+            gallery.style.display = 'none';
+            
+            // Eliminar stats si existe
+            if (stats) stats.remove();
+        } else {
+            // Mostrar galería
+            gallery.style.display = 'grid';
+            
+            // Ocultar mensaje "No hay imágenes"
+            const noImages = document.getElementById('noImages');
+            if (noImages) noImages.style.display = 'none';
+            
+            // Actualizar o crear stats
+            if (!stats) {
+                stats = document.createElement('div');
+                stats.id = 'imageStats';
+                stats.className = 'stats';
+                gallery.parentNode.insertBefore(stats, gallery);
+            }
+            
+            stats.textContent = `Total de imágenes: ${count}`;
+        }
+    }
+}
+
+/**
+ * Aplica los filtros y búsqueda a las imágenes
+ */
+function applyFilters() {
+    const searchTerm = window.currentFilters.search.toLowerCase();
+    const imageItems = document.querySelectorAll('.image-item');
+    let visibleCount = 0;
+    
+    // Filtrar imágenes
+    imageItems.forEach(item => {
+        const filename = item.getAttribute('data-filename').toLowerCase();
+        const nameElement = item.querySelector('.image-name');
+        const name = nameElement ? nameElement.textContent.toLowerCase() : '';
+        
+        // Aplicar filtro de búsqueda
+        const matchesSearch = searchTerm === '' || 
+                              filename.includes(searchTerm) || 
+                              name.includes(searchTerm);
+        
+        // Mostrar/ocultar según filtros
+        if (matchesSearch) {
+            item.classList.remove('hidden');
+            visibleCount++;
+        } else {
+            item.classList.add('hidden');
+        }
+    });
+    
+    // Mostrar mensaje si no hay resultados
+    const noResults = document.getElementById('noSearchResults');
+    if (noResults) {
+        if (visibleCount === 0 && imageItems.length > 0) {
+            noResults.style.display = 'block';
+        } else {
+            noResults.style.display = 'none';
+        }
+    }
+    
+    // Aplicar ordenamiento
+    if (window.currentFilters.sortBy !== 'default') {
+        sortImages(window.currentFilters.sortBy, window.currentFilters.order);
+    }
+    
+    // Actualizar contador de imágenes visibles
+    const stats = document.getElementById('imageStats');
+    if (stats) {
+        stats.textContent = `Imágenes visibles: ${visibleCount} de ${imageItems.length}`;
+    }
+    
+    // Guardar filtros en localStorage
+    saveFiltersToLocalStorage();
+}
+
+/**
+ * Ordena las imágenes según criterio seleccionado
+ * @param {string} sortBy - Criterio de ordenación
+ * @param {string} order - Dirección del ordenamiento (asc/desc)
+ */
+function sortImages(sortBy, order) {
+    const gallery = document.getElementById('gallery');
+    const items = Array.from(gallery.querySelectorAll('.image-item:not(.hidden)'));
+    
+    items.sort((a, b) => {
+        let valueA, valueB;
+        
+        // Determinar valores a comparar según criterio de ordenamiento
+        if (sortBy === 'name') {
+            valueA = a.querySelector('.image-name').textContent.toLowerCase();
+            valueB = b.querySelector('.image-name').textContent.toLowerCase();
+        } 
+        else if (sortBy === 'date') {
+            // Extraer fecha del nombre (formato esperado: xxx-HHMM_DDMMAAAA.xxx)
+            const filenameA = a.getAttribute('data-filename');
+            const filenameB = b.getAttribute('data-filename');
+            
+            const datePartA = filenameA.split('-')[1]?.split('.')[0] || '';
+            const datePartB = filenameB.split('-')[1]?.split('.')[0] || '';
+            
+            valueA = datePartA;
+            valueB = datePartB;
+        }
+        else {
+            // Default: orden original
+            return 0;
+        }
+        
+        // Aplicar dirección del ordenamiento
+        let result = valueA.localeCompare(valueB);
+        return order === 'desc' ? -result : result;
+    });
+    
+    // Reordenar elementos en el DOM
+    items.forEach(item => gallery.appendChild(item));
+}
+
+/**
+ * Guarda los filtros actuales en localStorage
+ */
+function saveFiltersToLocalStorage() {
+    localStorage.setItem('galleryFilters', JSON.stringify(window.currentFilters));
+}
+
+/**
+ * Carga los filtros guardados desde localStorage
+ */
+function loadFiltersFromLocalStorage() {
+    const savedFilters = localStorage.getItem('galleryFilters');
+    if (savedFilters) {
+        try {
+            window.currentFilters = JSON.parse(savedFilters);
+            
+            // Aplicar filtros guardados a la interfaz
+            const searchInput = document.getElementById('imageSearch');
+            const sortSelect = document.getElementById('sortBy');
+            const orderToggle = document.getElementById('orderToggle');
+            
+            if (searchInput) searchInput.value = window.currentFilters.search;
+            if (sortSelect) sortSelect.value = window.currentFilters.sortBy;
+            if (orderToggle) {
+                orderToggle.innerHTML = window.currentFilters.order === 'asc' ? '&#8593;' : '&#8595;';
+            }
+            
+            // Aplicar filtros a las imágenes
+            applyFilters();
+        } catch (e) {
+            console.error('Error al cargar filtros:', e);
+            localStorage.removeItem('galleryFilters');
+        }
+    }
+}
+
+// Inicializar cuando el DOM esté listo
 document.addEventListener('DOMContentLoaded', function() {
     // Inicializar lazy loading
     initLazyLoading();
@@ -157,6 +575,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const closeBtn = document.querySelector('.close-modal');
     const prevBtn = document.getElementById('prevImage');
     const nextBtn = document.getElementById('nextImage');
+    const downloadBtn = document.getElementById('downloadImage');
     
     if (modal && closeBtn) {
         // Cerrar modal al hacer clic en X
@@ -187,28 +606,79 @@ document.addEventListener('DOMContentLoaded', function() {
         if (nextBtn) nextBtn.addEventListener('click', showNextImage);
     }
     
+    // Configurar formulario de edición de nombre
+    const editForm = document.getElementById('editNameForm');
+    if (editForm) {
+        editForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            saveImageName();
+        });
+    }
+    
+    // Configurar cierre del modal de edición
+    const closeEditBtn = document.querySelector('.close-edit-modal');
+    if (closeEditBtn) {
+        closeEditBtn.addEventListener('click', closeEditNameModal);
+    }
+    
+    // Configurar búsqueda y filtros
+    const searchInput = document.getElementById('imageSearch');
+    const searchButton = document.getElementById('searchButton');
+    const sortSelect = document.getElementById('sortBy');
+    const orderToggle = document.getElementById('orderToggle');
+    
+    if (searchInput) {
+        // Búsqueda en tiempo real al escribir
+        // searchInput.addEventListener('input', function() {
+        //     window.currentFilters.search = this.value;
+        //     applyFilters();
+        // });
+        
+        // Búsqueda al hacer clic en el botón
+        if (searchButton) {
+            searchButton.addEventListener('click', function() {
+                window.currentFilters.search = searchInput.value;
+                applyFilters();
+            });
+        }
+    }
+    
+    if (sortSelect) {
+        sortSelect.addEventListener('change', function() {
+            window.currentFilters.sortBy = this.value;
+            applyFilters();
+        });
+    }
+    
+    if (orderToggle) {
+        orderToggle.addEventListener('click', function() {
+            window.currentFilters.order = window.currentFilters.order === 'asc' ? 'desc' : 'asc';
+            this.innerHTML = window.currentFilters.order === 'asc' ? '&#8593;' : '&#8595;';
+            applyFilters();
+        });
+    }
+    
+    // Cargar filtros guardados
+    loadFiltersFromLocalStorage();
+    
+    // Configurar formulario de subida de imágenes
     const uploadForm = document.getElementById('uploadForm');
     if (uploadForm) {
         uploadForm.addEventListener('submit', async function(e) {
             e.preventDefault();
             
             const formData = new FormData();
-            const files = document.getElementById('fileInput').files;
+            const fileInput = document.getElementById('fileInput');
+            const files = fileInput.files;
             
             if (files.length === 0) {
                 showNotification('Por favor selecciona al menos una imagen', 'error');
                 return;
             }
             
-            for (let file of files) {
-                formData.append('files', file);
+            for (let i = 0; i < files.length; i++) {
+                formData.append('files', files[i]);
             }
-            
-            // Mostrar estado de carga
-            const uploadBtn = document.querySelector('.upload-btn');
-            const originalText = uploadBtn.textContent;
-            uploadBtn.textContent = 'Subiendo...';
-            uploadBtn.disabled = true;
             
             try {
                 const response = await fetch('/upload', {
@@ -216,173 +686,45 @@ document.addEventListener('DOMContentLoaded', function() {
                     body: formData
                 });
                 
-                const result = await response.json();
+                const data = await response.json();
                 
-                if (result.success) {
-                    showNotification(result.message, 'success');
-                    // Agregar nuevas imágenes a la galería
-                    addNewImages(result.files);
-                    // Limpiar formulario
-                    document.getElementById('fileInput').value = '';
+                if (data.success) {
+                    showNotification(data.message, 'success');
+                    
+                    // Recargar la página para mostrar las nuevas imágenes
+                    // (En una versión futura, se podrían añadir dinámicamente)
+                    setTimeout(() => {
+                        window.location.reload();
+                    }, 1000);
                 } else {
-                    showNotification(result.message, 'error');
+                    showNotification(data.message || 'Error al subir imágenes', 'error');
                 }
             } catch (error) {
-                showNotification('Error al subir las imágenes', 'error');
                 console.error('Error:', error);
-            } finally {
-                uploadBtn.textContent = originalText;
-                uploadBtn.disabled = false;
+                showNotification('Error al subir imágenes', 'error');
             }
+            
+            // Limpiar el input de archivos
+            fileInput.value = '';
         });
+        
+        // Mostrar nombres de archivos seleccionados
+        const fileInput = document.getElementById('fileInput');
+        if (fileInput) {
+            fileInput.addEventListener('change', function() {
+                const fileCount = this.files.length;
+                const selectedFiles = document.getElementById('selectedFiles');
+                
+                if (selectedFiles) {
+                    if (fileCount > 0) {
+                        selectedFiles.textContent = fileCount === 1 
+                            ? `1 archivo seleccionado: ${this.files[0].name}`
+                            : `${fileCount} archivos seleccionados`;
+                    } else {
+                        selectedFiles.textContent = 'No hay archivos seleccionados';
+                    }
+                }
+            });
+        }
     }
 });
-
-// Función para agregar nuevas imágenes a la galería
-function addNewImages(filenames) {
-    const gallery = document.getElementById('gallery');
-    const noImages = document.getElementById('noImages');
-    
-    // Ocultar mensaje de "no hay imágenes"
-    if (noImages) {
-        noImages.style.display = 'none';
-    }
-    
-    // Crear galería si no existe
-    if (!gallery) {
-        const newGallery = document.createElement('div');
-        newGallery.className = 'gallery';
-        newGallery.id = 'gallery';
-        document.querySelector('main').appendChild(newGallery);
-    }
-    
-    filenames.forEach(filename => {
-        const imageItem = document.createElement('div');
-        imageItem.className = 'image-item';
-        imageItem.setAttribute('data-filename', filename);
-        imageItem.innerHTML = `
-            <div class="thumbnail-container">
-                <img src="data:image/svg+xml;charset=utf-8,%3Csvg xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg' viewBox%3D'0 0 200 200'%2F%3E" 
-                     data-src="/uploads/${filename}" 
-                     alt="${filename}" 
-                     class="thumbnail lazy" 
-                     onclick="openImageModal('/uploads/${filename}', '${filename}')">
-                <div class="loading-spinner"></div>
-            </div>
-            <div class="image-name">${filename}</div>
-            <div class="actions">
-                <button onclick="openImageModal('/uploads/${filename}', '${filename}')" class="view-btn">Ver</button>
-                <button onclick="deleteImage('${filename}')" class="delete-btn">Eliminar</button>
-            </div>
-        `;
-        
-        // Insertar al principio (más recientes primero)
-        const currentGallery = document.getElementById('gallery');
-        currentGallery.insertBefore(imageItem, currentGallery.firstChild);
-        
-        // Inicializar lazy loading para las nuevas imágenes
-        const newLazyImages = imageItem.querySelectorAll('img.lazy');
-        if ('IntersectionObserver' in window && newLazyImages.length > 0) {
-            const imageObserver = new IntersectionObserver(function(entries, observer) {
-                entries.forEach(function(entry) {
-                    if (entry.isIntersecting) {
-                        const img = entry.target;
-                        const src = img.dataset.src;
-                        
-                        // Crear una imagen oculta para precargar
-                        const preloadImage = new Image();
-                        preloadImage.src = src;
-                        preloadImage.onload = function() {
-                            img.src = src;
-                            img.classList.add('loaded');
-                            
-                            // Ocultar el spinner
-                            const spinner = img.parentNode.querySelector('.loading-spinner');
-                            if (spinner) {
-                                spinner.style.display = 'none';
-                            }
-                        };
-                        
-                        imageObserver.unobserve(img);
-                    }
-                });
-            }, {
-                rootMargin: '50px 0px',
-                threshold: 0.01
-            });
-            
-            newLazyImages.forEach(function(img) {
-                imageObserver.observe(img);
-            });
-        } else if (newLazyImages.length > 0) {
-            newLazyImages.forEach(function(img) {
-                img.src = img.dataset.src;
-                img.classList.add('loaded');
-            });
-        }
-    });
-    
-    updateImageCount();
-}
-
-// Función para eliminar imágenes
-async function deleteImage(filename) {
-    try {
-        const response = await fetch(`/delete/${filename}`);
-        const result = await response.json();
-        
-        if (result.success) {
-            showNotification(result.message, 'success');
-            // Remover del DOM
-            const imageItem = document.querySelector(`[data-filename="${filename}"]`);
-            if (imageItem) {
-                imageItem.remove();
-            }
-            updateImageCount();
-        } else {
-            showNotification(result.message, 'error');
-        }
-    } catch (error) {
-        showNotification('Error al eliminar la imagen', 'error');
-        console.error('Error:', error);
-    }
-}
-
-// Función para actualizar el contador de imágenes
-function updateImageCount() {
-    const gallery = document.getElementById('gallery');
-    const imageStats = document.getElementById('imageStats');
-    const noImages = document.getElementById('noImages');
-    
-    if (gallery) {
-        const count = gallery.children.length;
-        
-        if (count === 0) {
-            if (gallery.parentNode) {
-                gallery.parentNode.removeChild(gallery);
-            }
-            if (imageStats && imageStats.parentNode) {
-                imageStats.parentNode.removeChild(imageStats);
-            }
-            if (noImages) {
-                noImages.style.display = 'block';
-            } else {
-                const newNoImages = document.createElement('div');
-                newNoImages.className = 'no-images';
-                newNoImages.id = 'noImages';
-                newNoImages.textContent = 'No hay imágenes subidas. ¡Sube la primera!';
-                document.querySelector('main').appendChild(newNoImages);
-            }
-        } else {
-            if (imageStats) {
-                imageStats.textContent = `Total de imágenes: ${count}`;
-            } else {
-                const newStats = document.createElement('div');
-                newStats.className = 'stats';
-                newStats.id = 'imageStats';
-                newStats.textContent = `Total de imágenes: ${count}`;
-                gallery.parentNode.insertBefore(newStats, gallery);
-            }
-        }
-    }
-}

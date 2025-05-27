@@ -64,6 +64,248 @@
     margin: 20px auto;
 }
 
+/* Estilos para búsqueda y filtros */
+.search-filter-section {
+    background: var(--color-bg-medium);
+    padding: var(--spacing-md);
+    border-radius: var(--border-radius);
+    margin-bottom: var(--spacing-lg);
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: center;
+    gap: var(--spacing-md);
+}
+
+.search-box {
+    display: flex;
+    flex: 1;
+    min-width: 200px;
+}
+
+.search-input {
+    flex: 1;
+    padding: 8px 12px;
+    border: 1px solid var(--color-border);
+    border-radius: var(--border-radius) 0 0 var(--border-radius);
+    background: var(--color-bg-light);
+    color: var(--color-text-primary);
+}
+
+.search-btn {
+    background: var(--color-accent);
+    color: white;
+    border: none;
+    padding: 0 15px;
+    border-radius: 0 var(--border-radius) var(--border-radius) 0;
+    cursor: pointer;
+}
+
+.filter-options {
+    display: flex;
+    gap: var(--spacing-sm);
+    align-items: center;
+}
+
+.filter-group {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.filter-select {
+    padding: 7px 10px;
+    border: 1px solid var(--color-border);
+    border-radius: var(--border-radius);
+    background: var(--color-bg-light);
+    color: var(--color-text-primary);
+}
+
+.order-toggle {
+    background: var(--color-bg-light);
+    color: var(--color-text-primary);
+    border: 1px solid var(--color-border);
+    width: 30px;
+    height: 30px;
+    border-radius: var(--border-radius);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.no-search-results {
+    text-align: center;
+    color: var(--color-text-muted);
+    font-style: italic;
+    margin: var(--spacing-md) 0;
+    padding: var(--spacing-lg);
+    background: var(--color-bg-medium);
+    border-radius: var(--border-radius);
+}
+
+/* Estilos para el modal de edición */
+.edit-modal .modal-content {
+    background: var(--color-bg-medium);
+    padding: var(--spacing-lg);
+    border-radius: var(--border-radius);
+    width: 90%;
+    max-width: 500px;
+    position: relative;
+}
+
+.edit-modal h2 {
+    margin-top: 0;
+    color: var(--color-text-primary);
+    margin-bottom: var(--spacing-md);
+}
+
+.close-edit-modal {
+    position: absolute;
+    top: 10px;
+    right: 15px;
+    font-size: 24px;
+    color: var(--color-text-muted);
+    cursor: pointer;
+}
+
+.form-group {
+    margin-bottom: var(--spacing-md);
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 5px;
+    color: var(--color-text-secondary);
+}
+
+.form-control {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid var(--color-border);
+    border-radius: var(--border-radius);
+    background: var(--color-bg-light);
+    color: var(--color-text-primary);
+}
+
+.form-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: var(--spacing-sm);
+    margin-top: var(--spacing-md);
+}
+
+.save-btn {
+    background: var(--color-accent);
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: var(--border-radius);
+    cursor: pointer;
+}
+
+.cancel-btn {
+    background: var(--color-bg-light);
+    color: var(--color-text-primary);
+    border: 1px solid var(--color-border);
+    padding: 8px 16px;
+    border-radius: var(--border-radius);
+    cursor: pointer;
+}
+
+/* Notificaciones */
+.notification-container {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 9999;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.notification {
+    padding: 15px;
+    border-radius: var(--border-radius);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    min-width: 250px;
+    max-width: 350px;
+    animation: slideIn 0.3s ease;
+}
+
+.notification.success {
+    background: #4CAF50;
+    color: white;
+}
+
+.notification.error {
+    background: var(--color-danger);
+    color: white;
+}
+
+.notification.info {
+    background: #2196F3;
+    color: white;
+}
+
+.notification-close {
+    margin-left: 10px;
+    cursor: pointer;
+    font-size: 20px;
+}
+
+.notification.fade-out {
+    animation: fadeOut 0.3s ease forwards;
+}
+
+@keyframes slideIn {
+    from { transform: translateX(100%); opacity: 0; }
+    to { transform: translateX(0); opacity: 1; }
+}
+
+@keyframes fadeOut {
+    from { opacity: 1; transform: translateX(0); }
+    to { opacity: 0; transform: translateX(10px); }
+}
+
+/* Estilos para elementos ocultos */
+.hidden {
+    display: none !important;
+}
+
+/* Estilos para el botón de descarga */
+.download-btn {
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    cursor: pointer;
+    border-radius: 4px;
+    transition: background-color 0.3s;
+}
+
+.download-btn:hover {
+    background-color: #3e8e41;
+}
+
+/* Estilos para botón de edición */
+.edit-btn {
+    background: #2196F3;
+    color: white;
+    padding: 5px 10px;
+    border: none;
+    border-radius: var(--border-radius);
+    font-size: 12px;
+    cursor: pointer;
+}
+
+.edit-btn:hover {
+    background: #0b7dda;
+}
+
 .nav-btn {
     background-color: rgba(255, 255, 255, 0.1);
     color: white;
