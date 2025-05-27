@@ -1,6 +1,6 @@
 <div align="center">
 
-# 🖼️ PITON - Sistema de Gestión de Imágenes
+# 🖼️ Sistema de Gestión de Imágenes
 
 ![Python](https://img.shields.io/badge/python-3.8+-blue.svg)
 ![Flask](https://img.shields.io/badge/flask-2.3.3-green.svg)
