@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html>
+<html lang="es">
 <head>
     <title>{% block title %}Sistema de Imágenes{% endblock %}</title>
     <meta charset="utf-8">
@@ -10,14 +10,54 @@
     <link rel="manifest" href="{{ url_for('static', filename='images/favicon/site.webmanifest') }}">
     <!-- Estilos CSS -->
     <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/auth.css') }}">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Permanent+Marker&display=swap" rel="stylesheet">
     {% block styles %}{% endblock %}
 </head>
 <body>
     <header class="app-header">
         <div class="container">
-            <h1><marquee>{% block header_title %}Sistema de Imágenes{% endblock %}</marquee></h1>
+            <div class="header-content">
+                <h1><a href="{{ url_for('image.index') }}"><marquee>{% block header_title %}Sistema de Imágenes{% endblock %}</marquee></a></h1>
+                <nav class="main-nav">
+                    <ul>
+                        <li><a href="{{ url_for('image.index') }}" class="nav-link">Galería</a></li>
+                        {% if current_user.is_authenticated %}
+                            <li class="dropdown">
+                                <a href="#" class="nav-link dropdown-toggle">{{ current_user.name }}</a>
+                                <div class="dropdown-menu">
+                                    <a href="{{ url_for('auth.profile') }}">Mi Perfil</a>
+                                    {% if current_user.is_administrator() %}
+                                        <a href="{{ url_for('admin.index') }}">Panel de Admin</a>
+                                    {% endif %}
+                                    <a href="{{ url_for('auth.change_password') }}">Cambiar Contraseña</a>
+                                    <a href="{{ url_for('auth.logout') }}">Cerrar Sesión</a>
+                                </div>
+                            </li>
+                        {% else %}
+                            <li><a href="{{ url_for('auth.login') }}" class="nav-link">Iniciar Sesión</a></li>
+                            <li><a href="{{ url_for('auth.register') }}" class="nav-link">Registrarse</a></li>
+                        {% endif %}
+                    </ul>
+                </nav>
+            </div>
         </div>
     </header>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            <div class="flash-messages">
+                {% for category, message in messages %}
+                    <div class="flash-message {{ category }}">
+                        <div class="flash-content">{{ message }}</div>
+                        <span class="close-flash" onclick="this.parentElement.style.display='none'">&times;</span>
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+    {% endwith %}
 
     <main class="container">
         {% block content %}{% endblock %}
@@ -31,6 +71,47 @@
 
     <!-- Scripts -->
     <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+    <!-- Script para dropdown del menú -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Manejo de los dropdowns
+            const dropdowns = document.querySelectorAll('.dropdown-toggle');
+            
+            dropdowns.forEach(dropdown => {
+                dropdown.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    this.parentElement.classList.toggle('active');
+                    
+                    // Cerrar otros dropdowns
+                    dropdowns.forEach(otherDropdown => {
+                        if (otherDropdown !== this) {
+                            otherDropdown.parentElement.classList.remove('active');
+                        }
+                    });
+                });
+            });
+            
+            // Cerrar dropdowns cuando se haga clic fuera
+            document.addEventListener('click', function(e) {
+                if (!e.target.closest('.dropdown')) {
+                    document.querySelectorAll('.dropdown').forEach(item => {
+                        item.classList.remove('active');
+                    });
+                }
+            });
+            
+            // Cerrar mensajes flash después de 5 segundos
+            const flashMessages = document.querySelectorAll('.flash-message');
+            flashMessages.forEach(message => {
+                setTimeout(() => {
+                    message.style.opacity = '0';
+                    setTimeout(() => {
+                        message.style.display = 'none';
+                    }, 500);
+                }, 5000);
+            });
+        });
+    </script>
     {% block scripts %}{% endblock %}
 </body>
 </html>

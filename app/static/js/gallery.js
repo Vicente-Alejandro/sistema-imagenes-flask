@@ -260,11 +260,16 @@ function saveImageName() {
         return false;
     }
     
+    // Obtener token CSRF si está disponible
+    const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+    
     // Realizar petición para actualizar el nombre
     fetch(`/update-name/${filename}`, {
-        method: 'PUT',
+        method: 'POST',  // Cambiado a POST para mayor compatibilidad
         headers: {
             'Content-Type': 'application/json',
+            'X-Requested-With': 'XMLHttpRequest',
+            'X-CSRF-TOKEN': csrfToken || ''
         },
         body: JSON.stringify({ new_name: newName })
     })
@@ -276,6 +281,12 @@ function saveImageName() {
             if (imageItem) {
                 const viewBtn = imageItem.querySelector('.view-btn');
                 const editBtn = imageItem.querySelector('.edit-btn');
+                const imageName = imageItem.querySelector('.image-name');
+                
+                // Actualizar el nombre visible en la tarjeta
+                if (imageName) {
+                    imageName.textContent = newName;
+                }
                 
                 // Actualizar botones con el nuevo nombre
                 if (viewBtn) {
@@ -371,29 +382,70 @@ function showNotification(message, type = 'info', duration = 3500) {
  * @param {string} filename - Nombre del archivo a eliminar
  */
 function deleteImage(filename) {
-    fetch(`/delete/${filename}`)
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                // Eliminar elemento del DOM
-                const imageItem = document.querySelector(`.image-item[data-filename="${filename}"]`);
-                if (imageItem) {
-                    imageItem.remove();
+    // Confirmar eliminación
+    if (!confirm('¿Estás seguro de que deseas eliminar esta imagen?')) {
+        return;
+    }
+    
+    // Usar el método POST para eliminar la imagen, con un token CSRF si es necesario
+    const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+    
+    fetch(`/delete/${filename}`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-Requested-With': 'XMLHttpRequest',
+            'X-CSRF-TOKEN': csrfToken || ''
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // Buscar el elemento en la galería normal o en la grilla de detalles
+            const imageItem = document.querySelector(`.image-item[data-filename="${filename}"]`);
+            const detailCard = document.querySelector(`.image-detail-card[data-filename="${filename}"]`);
+            
+            // Eliminar el elemento del DOM (cualquiera que se encuentre)
+            if (imageItem) {
+                imageItem.remove();
+                // Actualizar contador de imágenes
+                updateImageCount();
+            } else if (detailCard) {
+                detailCard.remove();
+                
+                // Verificar si no quedan imágenes
+                const container = document.querySelector('.image-detail-grid');
+                const remainingCards = container?.querySelectorAll('.image-detail-card')?.length || 0;
+                
+                if (remainingCards === 0) {
+                    // Crear mensaje de no imágenes si no hay más
+                    const noImagesMsg = document.createElement('div');
+                    noImagesMsg.className = 'no-images';
+                    noImagesMsg.innerHTML = 'No has subido ninguna imagen todavía. <a href="/" class="btn">Ir a la galería</a>';
                     
-                    // Actualizar contador de imágenes
-                    updateImageCount();
+                    if (container) {
+                        container.parentNode.appendChild(noImagesMsg);
+                        container.style.display = 'none';
+                    }
                     
-                    // Mostrar mensaje de éxito
-                    showNotification('Imagen eliminada correctamente', 'success');
+                    // Actualizar el título con el contador
+                    const heading = document.querySelector('.user-images h3');
+                    if (heading) {
+                        heading.textContent = 'Mis imágenes (0)';
+                    }
                 }
-            } else {
-                showNotification(data.message || 'Error al eliminar la imagen', 'error');
             }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            showNotification('Error al eliminar la imagen', 'error');
-        });
+            
+            // Mostrar mensaje de éxito
+            showNotification('Imagen eliminada correctamente', 'success');
+        } else {
+            showNotification(data.message || 'Error al eliminar la imagen', 'error');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        showNotification('Error al eliminar la imagen', 'error');
+    });
 }
 
 /**

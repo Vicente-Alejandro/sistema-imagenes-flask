@@ -26,12 +26,29 @@ Esta guía detalla los pasos para desplegar el Sistema de Gestión de Imágenes 
 3. **Instalar dependencias**
    ```bash
    pip install -r requirements.txt
+   
+   # Si usarás Amazon S3, instala boto3
+   pip install boto3
    ```
 
 4. **Configurar variables de entorno**
    ```bash
    cp .env.example .env
    # Editar .env con los valores apropiados
+   ```
+
+   Configura el tipo de almacenamiento en el archivo `.env`:
+   ```ini
+   # Para almacenamiento local (predeterminado)
+   STORAGE_TYPE=local
+   
+   # Para almacenamiento en Amazon S3
+   STORAGE_TYPE=s3
+   S3_BUCKET_NAME=tu-bucket-name
+   S3_BUCKET_URL=https://tu-bucket-name.s3.amazonaws.com
+   S3_ACCESS_KEY=tu-access-key
+   S3_SECRET_KEY=tu-secret-key
+   S3_REGION=us-east-1
    ```
 
 5. **Ejecutar la aplicación**
@@ -70,6 +87,9 @@ source venv/bin/activate
 # Instalar dependencias
 pip install -r requirements.txt
 pip install gunicorn
+
+# Para S3 (si se va a utilizar)
+pip install boto3
 ```
 
 ### 3. Configuración de Gunicorn
@@ -180,6 +200,58 @@ sudo apt install -y certbot python3-certbot-nginx
 sudo certbot --nginx -d tudominio.com
 ```
 
+## Configuración del Almacenamiento Dual
+
+El sistema soporta dos tipos de almacenamiento para las imágenes:
+
+### 1. Almacenamiento Local (predeterminado)
+
+Las imágenes se guardan en el directorio `uploads/` dentro del proyecto.
+
+- Asegúrate de que este directorio tenga permisos de escritura adecuados:
+  ```bash
+  # En entorno de producción (Linux)
+  sudo chown -R www-data:www-data /var/www/python/uploads
+  sudo chmod -R 775 /var/www/python/uploads
+  ```
+
+### 2. Almacenamiento en Amazon S3
+
+Para utilizar Amazon S3, debes configurar lo siguiente:
+
+1. **Crear un bucket de S3**:
+   - Inicia sesión en la consola de AWS
+   - Crea un nuevo bucket de S3
+   - Configura el bucket para permitir acceso público (para servir imágenes)
+   - Configura la política CORS para permitir solicitudes desde tu dominio
+
+2. **Configurar IAM**:
+   - Crea un usuario IAM con acceso programático
+   - Adjunta la política `AmazonS3FullAccess` o crea una política personalizada
+   - Guarda el Access Key y Secret Key generados
+
+3. **Configurar variables de entorno**:
+   ```ini
+   STORAGE_TYPE=s3
+   S3_BUCKET_NAME=tu-bucket-name
+   S3_BUCKET_URL=https://tu-bucket-name.s3.amazonaws.com
+   S3_ACCESS_KEY=tu-access-key
+   S3_SECRET_KEY=tu-secret-key
+   S3_REGION=us-east-1
+   ```
+
+4. **Configurar política CORS de S3**:
+   ```json
+   [
+     {
+       "AllowedHeaders": ["*"],
+       "AllowedMethods": ["GET"],
+       "AllowedOrigins": ["*"],
+       "ExposeHeaders": []
+     }
+   ]
+   ```
+
 ## Solución de Problemas Comunes
 
 1. **Error con python-magic**
@@ -196,6 +268,12 @@ sudo certbot --nginx -d tudominio.com
 3. **Error 502 Bad Gateway**
    - Verifica los logs de Gunicorn y Supervisor
    - Asegúrate de que la aplicación se esté ejecutando correctamente
+
+4. **Problemas con S3**
+   - Verifica las credenciales de AWS en el archivo `.env`
+   - Asegúrate de que el bucket de S3 tenga la configuración CORS correcta
+   - Revisa los permisos del bucket y del usuario IAM
+   - Comprueba los logs de la aplicación para errores relacionados con AWS
 
 ## Actualización de la Aplicación
 

@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+
+{% block title %}Página No Encontrada{% endblock %}
+
+{% block header_title %}Página No Encontrada{% endblock %}
+
+{% block content %}
+<div class="error-container">
+    <div class="error-card">
+        <div class="error-code">404</div>
+        <div class="error-message">
+            <h2>Página No Encontrada</h2>
+            <p>Lo sentimos, la página que estás buscando no existe.</p>
+            <div class="error-actions">
+                <a href="{{ url_for('image.index') }}" class="btn">Volver a la galería</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

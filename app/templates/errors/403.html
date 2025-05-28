@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+
+{% block title %}Acceso Prohibido{% endblock %}
+
+{% block header_title %}Acceso Prohibido{% endblock %}
+
+{% block content %}
+<div class="error-container">
+    <div class="error-card">
+        <div class="error-code">403</div>
+        <div class="error-message">
+            <h2>Acceso Prohibido</h2>
+            <p>No tienes permiso para acceder a esta página.</p>
+            <div class="error-actions">
+                <a href="{{ url_for('image.index') }}" class="btn">Volver a la galería</a>
+                {% if not current_user.is_authenticated %}
+                <a href="{{ url_for('auth.login') }}" class="btn">Iniciar sesión</a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

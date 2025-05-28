@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+
+{% block title %}Gestión de Usuarios{% endblock %}
+
+{% block header_title %}Gestión de Usuarios{% endblock %}
+
+{% block content %}
+<div class="admin-dashboard">
+    <div class="admin-header">
+        <h2>Usuarios del Sistema</h2>
+        <div class="admin-nav">
+            <a href="{{ url_for('admin.index') }}">Dashboard</a>
+            <a href="{{ url_for('admin.users') }}" class="active">Usuarios</a>
+            <a href="{{ url_for('admin.images') }}">Imágenes</a>
+        </div>
+    </div>
+    
+    <div class="admin-content">
+        <div class="table-container">
+            <table class="admin-table">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Nombre</th>
+                        <th>Email</th>
+                        <th>Rol</th>
+                        <th>Fecha de registro</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for user in users.items %}
+                    <tr>
+                        <td>{{ user.id }}</td>
+                        <td>{{ user.name }}</td>
+                        <td>{{ user.email }}</td>
+                        <td>{{ user.role }}</td>
+                        <td>{{ user.created_at|datetime }}</td>
+                        <td class="actions">
+                            <a href="{{ url_for('admin.edit_user', user_id=user.id) }}" class="btn-sm">Editar</a>
+                            <a href="{{ url_for('admin.images') }}?user_id={{ user.id }}" class="btn-sm">Ver imágenes</a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        
+        <!-- Paginación -->
+        {% if users.pages > 1 %}
+        <div class="pagination">
+            {% if users.has_prev %}
+            <a href="{{ url_for('admin.users', page=users.prev_num) }}" class="page-btn">&laquo; Anterior</a>
+            {% else %}
+            <span class="page-btn disabled">&laquo; Anterior</span>
+            {% endif %}
+            
+            <span class="page-info">Página {{ users.page }} de {{ users.pages }}</span>
+            
+            {% if users.has_next %}
+            <a href="{{ url_for('admin.users', page=users.next_num) }}" class="page-btn">Siguiente &raquo;</a>
+            {% else %}
+            <span class="page-btn disabled">Siguiente &raquo;</span>
+            {% endif %}
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

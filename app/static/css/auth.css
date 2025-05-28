@@ -1,0 +1,593 @@
+/* Estilos para la autenticación y el panel de administración */
+
+/* Contenedor para formularios de autenticación */
+.auth-container {
+    max-width: 500px;
+    margin: 2rem auto;
+    padding: 2rem;
+}
+
+.auth-form {
+    background: var(--color-bg-light);
+    border-radius: var(--border-radius);
+    padding: 2rem;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+}
+
+.auth-form h2 {
+    margin-bottom: 1.5rem;
+    color: var(--color-accent);
+    text-align: center;
+}
+
+/* Formularios */
+.form-group {
+    margin-bottom: 1.5rem;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 0.5rem;
+    color: var(--color-text-secondary);
+}
+
+.form-control {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    border: 1px solid var(--color-bg-medium);
+    border-radius: var(--border-radius);
+    background-color: var(--color-bg-dark);
+    color: var(--color-text-primary);
+    font-size: 1rem;
+    transition: all 0.3s;
+}
+
+.form-control:focus {
+    border-color: var(--color-accent);
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(107, 163, 214, 0.3);
+}
+
+.form-error {
+    color: var(--color-danger);
+    margin-top: 0.5rem;
+    font-size: 0.85rem;
+}
+
+.form-help {
+    color: var(--color-text-muted);
+    margin-top: 0.5rem;
+    font-size: 0.85rem;
+}
+
+.remember-me {
+    display: flex;
+    align-items: center;
+}
+
+.remember-me input[type="checkbox"] {
+    width: auto;
+    margin-right: 0.5rem;
+}
+
+.form-actions {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 2rem;
+}
+
+.auth-links {
+    margin-top: 1rem;
+    text-align: center;
+    padding-top: 1rem;
+    border-top: 1px solid var(--color-bg-medium);
+    font-size: 0.9rem;
+}
+
+.auth-links a {
+    color: var(--color-accent);
+    text-decoration: none;
+}
+
+.auth-links a:hover {
+    text-decoration: underline;
+}
+
+/* Perfil de usuario */
+.profile-container {
+    margin: 2rem 0;
+}
+
+.profile-header {
+    background: var(--color-bg-light);
+    border-radius: var(--border-radius);
+    padding: 2rem;
+    margin-bottom: 2rem;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+}
+
+.profile-header h2 {
+    margin-bottom: 0.5rem;
+    color: var(--color-accent);
+}
+
+.user-email {
+    color: var(--color-text-secondary);
+    margin-bottom: 0.5rem;
+}
+
+.user-role {
+    color: var(--color-text-muted);
+    margin-bottom: 1.5rem;
+    font-size: 0.9rem;
+}
+
+.profile-actions {
+    margin-top: 1rem;
+}
+
+/* Flash Messages */
+.flash-messages {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    width: 300px;
+    z-index: 9999;
+}
+
+.flash-message {
+    background: var(--color-bg-light);
+    border-left: 4px solid var(--color-accent);
+    margin-bottom: 10px;
+    padding: 15px;
+    border-radius: var(--border-radius);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    transition: opacity 0.5s ease-in-out;
+}
+
+.flash-message.success {
+    border-left-color: var(--color-success);
+}
+
+.flash-message.error {
+    border-left-color: var(--color-danger);
+}
+
+.flash-message.info {
+    border-left-color: var(--color-accent);
+}
+
+.flash-content {
+    flex-grow: 1;
+}
+
+.close-flash {
+    margin-left: 10px;
+    cursor: pointer;
+    font-size: 1.2rem;
+    opacity: 0.7;
+}
+
+.close-flash:hover {
+    opacity: 1;
+}
+
+/* Admin Panel */
+.admin-dashboard {
+    margin: 1.5rem 0;
+}
+
+.admin-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+    flex-wrap: wrap;
+}
+
+.admin-header h2 {
+    margin-bottom: 0.5rem;
+    color: var(--color-accent);
+}
+
+.admin-nav {
+    display: flex;
+    gap: 1rem;
+    margin-top: 1rem;
+}
+
+.admin-nav a {
+    padding: 0.5rem 1rem;
+    background-color: var(--color-bg-light);
+    border-radius: var(--border-radius);
+    text-decoration: none;
+    color: var(--color-text-secondary);
+    transition: all 0.3s;
+}
+
+.admin-nav a:hover,
+.admin-nav a.active {
+    background-color: var(--color-accent);
+    color: white;
+}
+
+.stats-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.stat-card {
+    background: var(--color-bg-light);
+    border-radius: var(--border-radius);
+    padding: 1.5rem;
+    text-align: center;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+}
+
+.stat-number {
+    font-size: 2.5rem;
+    font-weight: bold;
+    color: var(--color-accent);
+    margin-bottom: 0.5rem;
+}
+
+.stat-label {
+    color: var(--color-text-secondary);
+    margin-bottom: 1rem;
+}
+
+.stat-link {
+    display: inline-block;
+    color: var(--color-accent);
+    text-decoration: none;
+    font-size: 0.9rem;
+}
+
+.stat-link:hover {
+    text-decoration: underline;
+}
+
+.admin-section {
+    background: var(--color-bg-light);
+    border-radius: var(--border-radius);
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+}
+
+.admin-section h3 {
+    margin-bottom: 1rem;
+    color: var(--color-text-secondary);
+    border-bottom: 1px solid var(--color-bg-medium);
+    padding-bottom: 0.5rem;
+}
+
+.admin-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.admin-table th,
+.admin-table td {
+    padding: 0.75rem;
+    text-align: left;
+    border-bottom: 1px solid var(--color-bg-medium);
+}
+
+.admin-table th {
+    color: var(--color-text-secondary);
+    font-weight: normal;
+}
+
+.admin-table td {
+    color: var(--color-text-primary);
+}
+
+.admin-table .actions {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.btn-sm {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.85rem;
+}
+
+.filter-form {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+    flex-wrap: wrap;
+}
+
+.filter-form .form-group {
+    margin-bottom: 0;
+    flex-grow: 1;
+}
+
+.admin-filters {
+    margin-bottom: 2rem;
+}
+
+.pagination {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 1rem;
+    margin-top: 2rem;
+}
+
+.page-btn {
+    padding: 0.5rem 1rem;
+    background-color: var(--color-bg-light);
+    border-radius: var(--border-radius);
+    text-decoration: none;
+    color: var(--color-text-secondary);
+    transition: all 0.3s;
+}
+
+.page-btn:hover:not(.disabled) {
+    background-color: var(--color-accent);
+    color: white;
+}
+
+.page-btn.disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.page-info {
+    color: var(--color-text-muted);
+}
+
+.view-all {
+    text-align: center;
+    margin-top: 1rem;
+}
+
+.view-all a {
+    color: var(--color-accent);
+    text-decoration: none;
+}
+
+.view-all a:hover {
+    text-decoration: underline;
+}
+
+.recent-images {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 1.5rem;
+}
+
+.recent-image {
+    background: var(--color-bg-medium);
+    border-radius: var(--border-radius);
+    overflow: hidden;
+}
+
+.image-preview {
+    height: 150px;
+    overflow: hidden;
+}
+
+.image-preview img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.3s;
+    cursor: pointer;
+}
+
+.image-preview img:hover {
+    transform: scale(1.05);
+}
+
+.image-info {
+    padding: 0.75rem;
+}
+
+.image-name {
+    margin-bottom: 0.5rem;
+    color: var(--color-text-primary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.uploader, .upload-date {
+    font-size: 0.85rem;
+    color: var(--color-text-muted);
+}
+
+.admin-gallery {
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+}
+
+.inline-form {
+    display: inline;
+}
+
+/* Error pages */
+.error-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 60vh;
+}
+
+.error-card {
+    display: flex;
+    background: var(--color-bg-light);
+    border-radius: var(--border-radius);
+    overflow: hidden;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+    max-width: 800px;
+    width: 100%;
+}
+
+.error-code {
+    font-size: 4rem;
+    font-weight: bold;
+    color: var(--color-accent);
+    padding: 2rem;
+    background: var(--color-bg-medium);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.error-message {
+    padding: 2rem;
+    flex-grow: 1;
+}
+
+.error-message h2 {
+    margin-bottom: 1rem;
+    color: var(--color-text-secondary);
+}
+
+.error-message p {
+    margin-bottom: 2rem;
+    color: var(--color-text-muted);
+}
+
+.error-actions {
+    display: flex;
+    gap: 1rem;
+}
+
+/* Dropdown y navegación principal */
+.header-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.header-content h1 {
+    margin: 0;
+}
+
+.header-content h1 a {
+    color: var(--color-accent);
+    text-decoration: none;
+}
+
+.main-nav ul {
+    display: flex;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    gap: 1rem;
+}
+
+.main-nav .nav-link {
+    color: var(--color-text-secondary);
+    text-decoration: none;
+    padding: 0.5rem 1rem;
+    border-radius: var(--border-radius);
+    transition: all 0.3s;
+}
+
+.main-nav .nav-link:hover {
+    background: var(--color-bg-light);
+}
+
+.dropdown {
+    position: relative;
+}
+
+.dropdown-menu {
+    position: absolute;
+    top: 100%;
+    right: 0;
+    background: var(--color-bg-light);
+    border-radius: var(--border-radius);
+    padding: 0.5rem 0;
+    min-width: 180px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(10px);
+    transition: all 0.3s;
+    z-index: 100;
+}
+
+.dropdown.active .dropdown-menu {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+}
+
+.dropdown-menu a {
+    display: block;
+    padding: 0.75rem 1.5rem;
+    color: var(--color-text-secondary);
+    text-decoration: none;
+    transition: all 0.2s;
+}
+
+.dropdown-menu a:hover {
+    background: var(--color-bg-medium);
+}
+
+/* Estilos responsivos */
+@media (max-width: 768px) {
+    .header-content {
+        flex-direction: column;
+        gap: 1rem;
+    }
+    
+    .main-nav ul {
+        flex-direction: column;
+        width: 100%;
+    }
+    
+    .dropdown-menu {
+        position: static;
+        box-shadow: none;
+        opacity: 1;
+        visibility: visible;
+        transform: none;
+        display: none;
+    }
+    
+    .dropdown.active .dropdown-menu {
+        display: block;
+    }
+    
+    .admin-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    
+    .admin-nav {
+        width: 100%;
+        overflow-x: auto;
+    }
+    
+    .error-card {
+        flex-direction: column;
+    }
+    
+    .form-actions {
+        flex-direction: column;
+        gap: 1rem;
+    }
+    
+    .form-actions .btn {
+        width: 100%;
+    }
+    
+    .auth-container {
+        padding: 1rem;
+    }
+}

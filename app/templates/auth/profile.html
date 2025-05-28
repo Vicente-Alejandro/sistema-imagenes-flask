@@ -1,0 +1,97 @@
+{% extends "base.html" %}
+
+{% block title %}Mi Perfil{% endblock %}
+
+{% block header_title %}Mi Perfil{% endblock %}
+
+{% block styles %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/gallery.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/image-detail.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="profile-container">
+    <div class="profile-header">
+        <h2>{{ user.name }}</h2>
+        <p class="user-email">{{ user.email }}</p>
+        <p class="user-role">Rol: {{ user.role }}</p>
+        <div class="profile-actions">
+            <a href="{{ url_for('auth.change_password') }}" class="btn">Cambiar contraseña</a>
+        </div>
+    </div>
+    
+    <div class="user-images">
+        <h3>Mis imágenes ({{ user_images|length }})</h3>
+        
+        {% if user_images %}
+        <div class="image-detail-grid" id="gallery">
+            {% for image in user_images %}
+            <div class="image-detail-card" data-filename="{{ image.filename }}">
+                <img src="{{ image.url }}" 
+                     alt="{{ image.original_filename }}" 
+                     class="image-detail-thumbnail" 
+                     onclick="openImageModal('{{ image.url }}', '{{ image.original_filename }}')">
+                <div class="image-detail-info">
+                    <div class="image-detail-title">{{ image.original_filename }}</div>
+                    <div class="image-detail-meta">
+                        <div><strong>Subida:</strong> {{ image.created_at.strftime('%d/%m/%Y %H:%M') }}</div>
+                        {% if image.file_size %}
+                        <div><strong>Tamaño:</strong> {{ (image.file_size / 1024)|round(1) }} KB</div>
+                        {% endif %}
+                        {% if image.width and image.height %}
+                        <div><strong>Dimensiones:</strong> {{ image.width }}x{{ image.height }}</div>
+                        {% endif %}
+                    </div>
+                    <div class="image-detail-actions">
+                        <button onclick="openImageModal('{{ image.url }}', '{{ image.original_filename }}')" class="image-detail-btn btn-view">Ver</button>
+                        <button onclick="editImageName('{{ image.filename }}', '{{ image.original_filename }}')" class="image-detail-btn btn-edit">Editar</button>
+                        <button onclick="deleteImage('{{ image.filename }}')" class="image-detail-btn btn-delete">Eliminar</button>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="no-images">
+            No has subido ninguna imagen todavía.
+            <a href="{{ url_for('image.index') }}" class="btn">Ir a la galería</a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Modal/Lightbox para vista de imagen completa -->
+<div id="imageModal" class="modal">
+    <span class="close-modal">&times;</span>
+    <img id="modalImage" class="modal-content">
+    <div id="modalCaption"></div>
+    <div class="modal-nav">
+        <button id="prevImage" class="nav-btn prev-btn">&laquo; Anterior</button>
+        <button id="nextImage" class="nav-btn next-btn">Siguiente &raquo;</button>
+        <button id="downloadImage" class="nav-btn download-btn">Descargar</button>
+    </div>
+</div>
+
+<!-- Modal para editar nombre de imagen -->
+<div id="editNameModal" class="modal edit-modal">
+    <div class="modal-content edit-modal-content">
+        <span class="close-edit-modal">&times;</span>
+        <h2>Editar nombre de imagen</h2>
+        <form id="editNameForm">
+            <input type="hidden" id="editImageFilename">
+            <div class="form-group">
+                <label for="newImageName">Nuevo nombre:</label>
+                <input type="text" id="newImageName" class="form-control" required>
+            </div>
+            <div class="form-actions">
+                <button type="submit" class="save-btn">Guardar cambios</button>
+                <button type="button" class="cancel-btn" onclick="closeEditNameModal()">Cancelar</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/gallery.js') }}"></script>
+{% endblock %}

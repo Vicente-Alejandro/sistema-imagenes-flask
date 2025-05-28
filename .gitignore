@@ -14,6 +14,9 @@ ENV/
 env.bak/
 venv.bak/
 
+#migrations
+migrations/
+
 # Archivos de configuración local
 instance/
 .env

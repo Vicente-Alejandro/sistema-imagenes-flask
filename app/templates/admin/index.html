@@ -1,0 +1,90 @@
+{% extends "base.html" %}
+
+{% block title %}Panel de Administración{% endblock %}
+
+{% block header_title %}Panel de Administración{% endblock %}
+
+{% block content %}
+<div class="admin-dashboard">
+    <div class="admin-header">
+        <h2>Dashboard</h2>
+        <div class="admin-nav">
+            <a href="{{ url_for('admin.index') }}" class="active">Dashboard</a>
+            <a href="{{ url_for('admin.users') }}">Usuarios</a>
+            <a href="{{ url_for('admin.images') }}">Imágenes</a>
+        </div>
+    </div>
+    
+    <div class="stats-cards">
+        <div class="stat-card">
+            <div class="stat-number">{{ stats.user_count }}</div>
+            <div class="stat-label">Usuarios</div>
+            <a href="{{ url_for('admin.users') }}" class="stat-link">Ver todos</a>
+        </div>
+        
+        <div class="stat-card">
+            <div class="stat-number">{{ stats.image_count }}</div>
+            <div class="stat-label">Imágenes</div>
+            <a href="{{ url_for('admin.images') }}" class="stat-link">Ver todas</a>
+        </div>
+    </div>
+    
+    <div class="admin-content">
+        <div class="admin-section">
+            <h3>Últimos Usuarios</h3>
+            <div class="table-container">
+                <table class="admin-table">
+                    <thead>
+                        <tr>
+                            <th>Nombre</th>
+                            <th>Email</th>
+                            <th>Rol</th>
+                            <th>Fecha de registro</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for user in stats.latest_users %}
+                        <tr>
+                            <td>{{ user.name }}</td>
+                            <td>{{ user.email }}</td>
+                            <td>{{ user.role }}</td>
+                            <td>{{ user.created_at|datetime }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% if stats.latest_users %}
+            <div class="view-all">
+                <a href="{{ url_for('admin.users') }}">Ver todos los usuarios</a>
+            </div>
+            {% endif %}
+        </div>
+        
+        <div class="admin-section">
+            <h3>Últimas Imágenes</h3>
+            <div class="recent-images">
+                {% for image in stats.latest_images %}
+                <div class="recent-image">
+                    <div class="image-preview">
+                        <img src="/uploads/{{ image.filename }}" 
+                             alt="{{ image.original_filename }}"
+                             onclick="window.location.href='/uploads/{{ image.filename }}'">
+                    </div>
+                    <div class="image-info">
+                        <div class="image-name">{{ image.original_filename }}</div>
+                        <div class="uploader">Subida por: {{ image.owner.name }}</div>
+                        <div class="upload-date">{{ image.created_at|datetime }}</div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% if stats.latest_images %}
+            <div class="view-all">
+                <a href="{{ url_for('admin.images') }}">Ver todas las imágenes</a>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

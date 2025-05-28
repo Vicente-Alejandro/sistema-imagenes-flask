@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+
+{% block title %}Error Interno del Servidor{% endblock %}
+
+{% block header_title %}Error Interno del Servidor{% endblock %}
+
+{% block content %}
+<div class="error-container">
+    <div class="error-card">
+        <div class="error-code">500</div>
+        <div class="error-message">
+            <h2>Error Interno del Servidor</h2>
+            <p>Lo sentimos, algo salió mal en nuestro servidor. Estamos trabajando para solucionarlo.</p>
+            <div class="error-actions">
+                <a href="{{ url_for('image.index') }}" class="btn">Volver a la galería</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

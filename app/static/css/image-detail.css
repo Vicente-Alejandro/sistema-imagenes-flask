@@ -1,0 +1,226 @@
+/**
+ * Estilos para las vistas detalladas de imágenes (perfil, admin, etc)
+ */
+
+.image-detail-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 20px;
+    margin-top: 20px;
+}
+
+.image-detail-card {
+    border: 1px solid #444;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    background-color: #2c2c2c; /* Fondo oscuro para coincidir con el tema de la galería */
+    color: #eee; /* Texto claro para fondos oscuros */
+}
+
+.image-detail-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+}
+
+.image-detail-thumbnail {
+    width: 100%;
+    height: 200px;
+    object-fit: cover;
+    display: block;
+    border-bottom: 1px solid #eee;
+}
+
+.image-detail-info {
+    padding: 15px;
+}
+
+.image-detail-title {
+    font-size: 16px;
+    font-weight: bold;
+    margin-bottom: 10px;
+    color: #fff; /* Texto blanco para fondos oscuros */
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.image-detail-meta {
+    font-size: 14px;
+    color: #ccc; /* Color más claro para texto secundario en fondos oscuros */
+    margin-bottom: 15px;
+}
+
+.image-detail-meta div {
+    margin-bottom: 5px;
+}
+
+.image-detail-actions {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 10px;
+}
+
+.image-detail-btn {
+    padding: 6px 12px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: background-color 0.2s;
+}
+
+.btn-view {
+    background-color: #007bff;
+    color: white;
+}
+
+.btn-view:hover {
+    background-color: #0069d9;
+}
+
+.btn-edit {
+    background-color: #6c757d;
+    color: white;
+}
+
+.btn-edit:hover {
+    background-color: #5a6268;
+}
+
+.btn-delete {
+    background-color: #dc3545;
+    color: white;
+}
+
+.btn-delete:hover {
+    background-color: #c82333;
+}
+
+/* Estilos para el filtro de imágenes en admin */
+.image-filter-form {
+    margin-bottom: 20px;
+    padding: 15px;
+    background-color: #2c2c2c; /* Fondo oscuro */
+    border: 1px solid #444;
+    border-radius: 8px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    color: #eee;
+}
+
+.filter-row {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    flex-wrap: wrap;
+}
+
+.filter-group {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.filter-label {
+    font-weight: 600;
+    min-width: 80px;
+}
+
+.filter-select {
+    padding: 8px 12px;
+    border: 1px solid #ced4da;
+    border-radius: 4px;
+    min-width: 180px;
+}
+
+.filter-btn {
+    padding: 8px 16px;
+    background-color: #28a745;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.filter-btn:hover {
+    background-color: #218838;
+}
+
+/* Paginación */
+.pagination {
+    display: flex;
+    justify-content: center;
+    margin-top: 30px;
+    gap: 5px;
+}
+
+.page-item {
+    display: inline-block;
+}
+
+.page-link {
+    padding: 8px 12px;
+    border: 1px solid #dee2e6;
+    color: #007bff;
+    background-color: #fff;
+    text-decoration: none;
+    border-radius: 4px;
+}
+
+.page-link:hover {
+    background-color: #e9ecef;
+    color: #0056b3;
+}
+
+.page-item.active .page-link {
+    background-color: #007bff;
+    color: white;
+    border-color: #007bff;
+}
+
+.page-item.disabled .page-link {
+    color: #6c757d;
+    pointer-events: none;
+    background-color: #fff;
+    border-color: #dee2e6;
+}
+
+/* Mensaje cuando no hay imágenes */
+.no-images-message {
+    text-align: center;
+    padding: 30px;
+    background-color: #2c2c2c; /* Fondo oscuro para coincidir con el tema */
+    border: 1px solid #444;
+    border-radius: 8px;
+    margin: 20px 0;
+    color: #eee; /* Texto claro */
+    font-size: 18px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+}
+
+/* Mejora para la galería principal */
+.image-info {
+    padding: 10px;
+}
+
+.image-metadata {
+    font-size: 12px;
+    color: #666;
+    margin-top: 5px;
+}
+
+.metadata-item {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 3px;
+}
+
+.metadata-label {
+    font-weight: 600;
+}
+
+.metadata-value {
+    text-align: right;
+}

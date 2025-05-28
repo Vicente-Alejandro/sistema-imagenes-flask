@@ -18,6 +18,7 @@
 ## ✨ Características Principales
 
 - **🚀 Optimización avanzada** - Conversión automática a WebP para reducir tamaño manteniendo calidad
+- **💾 Almacenamiento dual** - Soporte para almacenamiento local y Amazon S3 configurable con un simple switch
 - **🔍 Validación robusta** - Verificación exhaustiva de tipos, dimensiones y seguridad de archivos
 - **⚡ Carga diferida (lazy loading)** - Mejora el rendimiento cargando imágenes solo cuando son visibles
 - **🧩 Arquitectura modular** - Diseñada con principios SOLID y patrón MVC para fácil mantenimiento
@@ -47,11 +48,12 @@ python run.py
 
 Para instrucciones detalladas de despliegue en entornos de producción, consulta nuestra [Guía de Despliegue](.github/DEPLOY.md).
 
-## 🧰 Tecnologías
+## 🔧 Tecnologías
 
 - **Backend**: Flask, Python 3.8+
 - **Frontend**: HTML5, CSS3, JavaScript (Vanilla)
 - **Procesamiento de imágenes**: Pillow, python-magic
+- **Almacenamiento en la nube**: Amazon S3 (opcional, mediante boto3)
 - **Configuración**: python-dotenv
 
 ## 🤝 Contribuciones

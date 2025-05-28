@@ -1,0 +1,161 @@
+{% extends "base.html" %}
+
+{% block title %}Gestión de Imágenes{% endblock %}
+
+{% block header_title %}Gestión de Imágenes{% endblock %}
+
+{% block styles %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/gallery.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/image-detail.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="admin-dashboard">
+    <div class="admin-header">
+        <h2>Imágenes del Sistema</h2>
+        <div class="admin-nav">
+            <a href="{{ url_for('admin.index') }}">Dashboard</a>
+            <a href="{{ url_for('admin.users') }}">Usuarios</a>
+            <a href="{{ url_for('admin.images') }}" class="active">Imágenes</a>
+        </div>
+    </div>
+    
+    <div class="admin-content">
+        <div class="image-filter-form">
+            <div class="search-filter-section">
+                <div class="search-box">
+                    <input type="text" id="imageSearch" placeholder="Buscar por nombre o usuario..." class="search-input">
+                    <button id="searchButton" class="search-btn"><i class="fa fa-search"></i>Buscar</button>
+                </div>
+                <div class="filter-options">
+                    <div class="filter-group">
+                        <label for="sortBy">Ordenar por:</label>
+                        <select id="sortBy" class="filter-select">
+                            <option value="default">Por defecto</option>
+                            <option value="name">Nombre</option>
+                            <option value="user">Usuario</option>
+                            <option value="date">Fecha</option>
+                        </select>
+                        <button id="orderToggle" class="order-toggle">&#8593;</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Mensaje de no resultados para búsqueda -->
+        <div id="noSearchResults" class="no-search-results" style="display: none;">
+            No se encontraron resultados para tu búsqueda.
+        </div>
+        
+        {% if images.items %}
+        <div class="image-detail-grid" id="gallery">
+            {% for image in images.items %}
+            <div class="image-detail-card" data-filename="{{ image.filename }}">
+                <img src="{{ image.url }}" 
+                     alt="{{ image.original_filename }}" 
+                     class="image-detail-thumbnail" 
+                     onclick="openImageModal('{{ image.url }}', '{{ image.original_filename }}')">
+                <div class="image-detail-info">
+                    <div class="image-detail-title" title="{{ image.original_filename }}">{{ image.original_filename }}</div>
+                    <div class="image-detail-meta">
+                        <div><strong>Subida por:</strong> {{ image.owner.name }}</div>
+                        <div><strong>Fecha:</strong> {{ image.created_at.strftime('%d/%m/%Y %H:%M') }}</div>
+                        {% if image.file_size %}
+                        <div><strong>Tamaño:</strong> {{ (image.file_size / 1024)|round(1) }} KB</div>
+                        {% endif %}
+                        {% if image.width and image.height %}
+                        <div><strong>Dimensiones:</strong> {{ image.width }}x{{ image.height }}</div>
+                        {% endif %}
+                    </div>
+                    <div class="image-detail-actions">
+                        <button onclick="openImageModal('{{ image.url }}', '{{ image.original_filename }}')" class="image-detail-btn btn-view">Ver</button>
+                        <button onclick="adminDeleteImage('{{ image.id }}', this)" class="image-detail-btn btn-delete">Eliminar</button>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        
+        <!-- Paginación -->
+        {% if images.pages > 1 %}
+        <div class="pagination">
+            {% if images.has_prev %}
+            <li class="page-item">
+                <a href="{{ url_for('admin.images', page=images.prev_num, user_id=request.args.get('user_id')) }}" class="page-link">&laquo; Anterior</a>
+            </li>
+            {% else %}
+            <li class="page-item disabled">
+                <span class="page-link">&laquo; Anterior</span>
+            </li>
+            {% endif %}
+            
+            {% for page_num in range(1, images.pages + 1) %}
+                {% if page_num != images.page %}
+                <li class="page-item">
+                    <a href="{{ url_for('admin.images', page=page_num, user_id=request.args.get('user_id')) }}" class="page-link">{{ page_num }}</a>
+                </li>
+                {% else %}
+                <li class="page-item active">
+                    <span class="page-link">{{ page_num }}</span>
+                </li>
+                {% endif %}
+            {% endfor %}
+            
+            {% if images.has_next %}
+            <li class="page-item">
+                <a href="{{ url_for('admin.images', page=images.next_num, user_id=request.args.get('user_id')) }}" class="page-link">Siguiente &raquo;</a>
+            </li>
+            {% else %}
+            <li class="page-item disabled">
+                <span class="page-link">Siguiente &raquo;</span>
+            </li>
+            {% endif %}
+        </div>
+        {% endif %}
+        
+        {% else %}
+        <div class="no-images-message">
+            <p>No hay imágenes que coincidan con los filtros seleccionados.</p>
+            <a href="{{ url_for('admin.images') }}" class="filter-btn">Ver todas las imágenes</a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Modal/Lightbox para vista de imagen completa -->
+<div id="imageModal" class="modal">
+    <span class="close-modal">&times;</span>
+    <img id="modalImage" class="modal-content">
+    <div id="modalCaption"></div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // Función simplificada para mostrar el modal de imagen
+    function openImageModal(imageSrc, caption) {
+        const modal = document.getElementById('imageModal');
+        const modalImg = document.getElementById('modalImage');
+        const modalCaption = document.getElementById('modalCaption');
+        
+        modal.style.display = 'block';
+        modalImg.src = imageSrc;
+        modalCaption.textContent = caption;
+    }
+    
+    // Cerrar modal al hacer clic en X
+    document.querySelector('.close-modal').addEventListener('click', function() {
+        document.getElementById('imageModal').style.display = 'none';
+    });
+    
+    // Cerrar modal al hacer clic fuera de la imagen
+    document.getElementById('imageModal').addEventListener('click', function(e) {
+        if (e.target === this) {
+            this.style.display = 'none';
+        }
+    });
+</script>
+
+<!-- Cargar el script de administración -->
+<script src="{{ url_for('static', filename='js/admin.js') }}"></script>
+{% endblock %}

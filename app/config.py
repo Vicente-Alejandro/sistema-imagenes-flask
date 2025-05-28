@@ -13,33 +13,42 @@ try:
     PORT = int(os.environ.get('PORT', 3000))
 except (ValueError, TypeError):
     PORT = 3000
+    
+# Configuración de base de datos
+DB_CONNECTION = os.environ.get('DB_CONNECTION', 'sqlite').lower()
+DB_HOST = os.environ.get('DB_HOST', '127.0.0.1')
+DB_PORT = os.environ.get('DB_PORT', 3306)
+DB_DATABASE = os.environ.get('DB_DATABASE', 'piton')
+DB_USERNAME = os.environ.get('DB_USERNAME', 'root')
+DB_PASSWORD = os.environ.get('DB_PASSWORD', '')
 
 class Config:
     """Clase base de configuración para la aplicación"""
     # Nombre de la aplicación
     APP_NAME = os.environ.get('APP_NAME', 'Sistema de Gestión de Imágenes PITON')
     
+    # Configuración de almacenamiento
+    STORAGE_TYPE = os.environ.get('STORAGE_TYPE', 'local')
+    
+    # Carpeta para archivos subidos (para almacenamiento local)
+    UPLOAD_FOLDER = os.environ.get('UPLOAD_FOLDER') or os.path.join(basedir, 'uploads')
+    
+    # Extensiones permitidas para archivos
+    ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif', 'bmp', 'webp'}
+    
+    # Configuración de Amazon S3
+    S3_BUCKET_NAME = os.environ.get('S3_BUCKET_NAME')
+    S3_BUCKET_URL = os.environ.get('S3_BUCKET_URL')
+    S3_ACCESS_KEY = os.environ.get('S3_ACCESS_KEY')
+    S3_SECRET_KEY = os.environ.get('S3_SECRET_KEY')
+    S3_REGION = os.environ.get('S3_REGION', 'us-east-1')
+    
     # En desarrollo, generar una clave aleatoria para la sesión
     # En producción, SIEMPRE usar la variable de entorno SECRET_KEY
     SECRET_KEY = os.environ.get('SECRET_KEY')
-    if not SECRET_KEY:
-        # Solo para desarrollo - no usar en producción
-        print("ADVERTENCIA: Usando una SECRET_KEY temporal. Esto no es seguro para producción.")
-        SECRET_KEY = secrets.token_hex(32)
     
     # Configuración de debug
     DEBUG = os.environ.get('DEBUG', 'false').lower() in ('true', 't', '1', 'yes', 'y')
-    
-    # Cargar rutas y límites desde variables de entorno o usar valores predeterminados
-    UPLOAD_FOLDER = os.environ.get('UPLOAD_FOLDER') or os.path.join(basedir, 'uploads')
-    
-    # Obtener MAX_CONTENT_LENGTH del .env o usar el valor predeterminado
-    try:
-        MAX_CONTENT_LENGTH = int(os.environ.get('MAX_CONTENT_LENGTH', 48 * 1024 * 1024))  # Valor predeterminado: 48MB
-    except (ValueError, TypeError):
-        MAX_CONTENT_LENGTH = 48 * 1024 * 1024  # Valor predeterminado si hay un error de conversión
-        
-    ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif', 'bmp', 'webp'}
     
     # Configuración para conversión WebP
     try:
@@ -50,6 +59,24 @@ class Config:
         WEBP_QUALITY = 85
         
     WEBP_LOSSLESS_TRANSPARENCY = os.environ.get('WEBP_LOSSLESS_TRANSPARENCY', 'true').lower() in ('true', 't', '1', 'yes', 'y')
+    
+    # Configuración de la base de datos
+    # Configurando la URL de la base de datos según el tipo de conexión
+    if DB_CONNECTION == 'sqlite':
+        SQLALCHEMY_DATABASE_URI = f'sqlite:///{os.path.join(basedir, DB_DATABASE + ".db")}'
+    elif DB_CONNECTION in ['mysql', 'mariadb']:
+        SQLALCHEMY_DATABASE_URI = f'{DB_CONNECTION}://{DB_USERNAME}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_DATABASE}'
+    else:
+        # Valor predeterminado es SQLite si no se especifica un tipo de conexión válido
+        SQLALCHEMY_DATABASE_URI = f'sqlite:///{os.path.join(basedir, "piton.db")}'
+        
+    # Otras configuraciones de SQLAlchemy
+    SQLALCHEMY_TRACK_MODIFICATIONS = False
+    SQLALCHEMY_RECORD_QUERIES = True
+    SQLALCHEMY_ENGINE_OPTIONS = {
+        'pool_recycle': 280,
+        'pool_pre_ping': True
+    }
     
     # Configuración de logging
     LOG_LEVEL = os.environ.get('LOG_LEVEL', 'INFO').upper()

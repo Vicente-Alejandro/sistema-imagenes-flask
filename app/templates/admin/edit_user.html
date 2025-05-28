@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+
+{% block title %}Editar Usuario{% endblock %}
+
+{% block header_title %}Editar Usuario{% endblock %}
+
+{% block content %}
+<div class="admin-dashboard">
+    <div class="admin-header">
+        <h2>Editar Usuario: {{ user.name }}</h2>
+        <div class="admin-nav">
+            <a href="{{ url_for('admin.index') }}">Dashboard</a>
+            <a href="{{ url_for('admin.users') }}" class="active">Usuarios</a>
+            <a href="{{ url_for('admin.images') }}">Imágenes</a>
+        </div>
+    </div>
+    
+    <div class="admin-content">
+        <div class="auth-form">
+            <form method="POST" action="{{ url_for('admin.edit_user', user_id=user.id) }}">
+                {{ form.csrf_token }}
+                
+                <div class="form-group">
+                    {{ form.name.label }}
+                    {{ form.name(class="form-control") }}
+                    {% if form.name.errors %}
+                        <div class="form-error">{{ form.name.errors[0] }}</div>
+                    {% endif %}
+                </div>
+                
+                <div class="form-group">
+                    {{ form.email.label }}
+                    {{ form.email(class="form-control") }}
+                    {% if form.email.errors %}
+                        <div class="form-error">{{ form.email.errors[0] }}</div>
+                    {% endif %}
+                </div>
+                
+                <div class="form-group">
+                    {{ form.role.label }}
+                    {{ form.role(class="form-control") }}
+                    {% if form.role.errors %}
+                        <div class="form-error">{{ form.role.errors[0] }}</div>
+                    {% endif %}
+                    
+                    {% if admin_only %}
+                    <div class="form-help">
+                        No se puede cambiar el rol del administrador.
+                    </div>
+                    {% endif %}
+                </div>
+                
+                <div class="form-actions">
+                    {{ form.submit(class="btn") }}
+                    <a href="{{ url_for('admin.users') }}" class="btn btn-secondary">Cancelar</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
