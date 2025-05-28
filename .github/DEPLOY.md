@@ -51,7 +51,24 @@ Esta guía detalla los pasos para desplegar el Sistema de Gestión de Imágenes 
    S3_REGION=us-east-1
    ```
 
-5. **Ejecutar la aplicación**
+5. **Inicializar la base de datos**
+   ```bash
+
+   # Crear la base de datos
+   mysql -u root -p
+   CREATE DATABASE $database_name$;
+   
+   # Inicializar la base de datos con Flask-Migrate
+   flask db init
+   
+   # Generar la migración inicial
+   flask db migrate -m "initial migration"
+   
+   # Aplicar la migración
+   flask db upgrade
+   ```
+
+6. **Ejecutar la aplicación**
    ```bash
    python run.py
    ```
@@ -90,6 +107,11 @@ pip install gunicorn
 
 # Para S3 (si se va a utilizar)
 pip install boto3
+
+# Configurar la base de datos
+flask db init
+flask db migrate -m "initial migration"
+flask db upgrade
 ```
 
 ### 3. Configuración de Gunicorn
