@@ -383,9 +383,9 @@ function showNotification(message, type = 'info', duration = 3500) {
  */
 function deleteImage(filename) {
     // Confirmar eliminación
-    if (!confirm('¿Estás seguro de que deseas eliminar esta imagen?')) {
-        return;
-    }
+    // if (!confirm('¿Estás seguro de que deseas eliminar esta imagen?')) {
+    //     return;
+    // }
     
     // Usar el método POST para eliminar la imagen, con un token CSRF si es necesario
     const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');

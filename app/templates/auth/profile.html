@@ -26,13 +26,13 @@
         {% if user_images %}
         <div class="image-detail-grid" id="gallery">
             {% for image in user_images %}
-            <div class="image-detail-card" data-filename="{{ image.filename }}">
+            <div class="image-detail-card image-item" data-filename="{{ image.filename }}">
                 <img src="{{ image.url }}" 
                      alt="{{ image.original_filename }}" 
                      class="image-detail-thumbnail" 
                      onclick="openImageModal('{{ image.url }}', '{{ image.original_filename }}')">
                 <div class="image-detail-info">
-                    <div class="image-detail-title">{{ image.original_filename }}</div>
+                    <div class="image-name">{{ image.original_filename }}</div>
                     <div class="image-detail-meta">
                         <div><strong>Subida:</strong> {{ image.created_at.strftime('%d/%m/%Y %H:%M') }}</div>
                         {% if image.file_size %}
