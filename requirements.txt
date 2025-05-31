@@ -2,7 +2,6 @@ flask
 werkzeug
 pillow
 python-magic
-python-magic-bin
 python-dotenv
 flask-login
 flask-migrate

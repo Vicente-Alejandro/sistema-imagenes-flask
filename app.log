@@ -1,0 +1,33 @@
+2025-05-30 23:43:44,315 - app - INFO - Aplicación iniciada en modo DESARROLLO
+2025-05-30 23:43:47,189 - werkzeug - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:3000
+ * Running on http://192.168.1.4:3000
+2025-05-30 23:43:47,191 - werkzeug - INFO - [33mPress CTRL+C to quit[0m
+2025-05-30 23:43:47,195 - werkzeug - INFO -  * Restarting with stat
+2025-05-30 23:43:48,036 - app - INFO - Aplicación iniciada en modo DESARROLLO
+2025-05-30 23:43:50,709 - werkzeug - WARNING -  * Debugger is active!
+2025-05-30 23:43:50,736 - werkzeug - INFO -  * Debugger PIN: 588-675-917
+2025-05-30 23:43:58,821 - werkzeug - INFO - 127.0.0.1 - - [30/May/2025 23:43:58] "GET / HTTP/1.1" 200 -
+2025-05-30 23:43:59,114 - werkzeug - INFO - 127.0.0.1 - - [30/May/2025 23:43:59] "GET /static/css/auth.css HTTP/1.1" 200 -
+2025-05-30 23:43:59,130 - werkzeug - INFO - 127.0.0.1 - - [30/May/2025 23:43:59] "GET /static/css/gallery.css HTTP/1.1" 200 -
+2025-05-30 23:43:59,132 - werkzeug - INFO - 127.0.0.1 - - [30/May/2025 23:43:59] "GET /static/css/main.css HTTP/1.1" 200 -
+2025-05-30 23:43:59,141 - werkzeug - INFO - 127.0.0.1 - - [30/May/2025 23:43:59] "GET /static/js/gallery.js HTTP/1.1" 200 -
+2025-05-30 23:43:59,144 - werkzeug - INFO - 127.0.0.1 - - [30/May/2025 23:43:59] "GET /static/js/main.js HTTP/1.1" 200 -
+2025-05-30 23:43:59,778 - werkzeug - INFO - 127.0.0.1 - - [30/May/2025 23:43:59] "GET /uploads/52ef99ec3afc489d9c49ecbf9b6e8f2c-300525_233938.webp HTTP/1.1" 200 -
+2025-05-30 23:44:00,771 - werkzeug - INFO - 127.0.0.1 - - [30/May/2025 23:44:00] "GET /uploads/8a842ac297594520b11d5ae975d1b160-300525_233752.webp HTTP/1.1" 200 -
+2025-05-30 23:44:00,788 - werkzeug - INFO - 127.0.0.1 - - [30/May/2025 23:44:00] "[36mGET /static/images/favicon/site.webmanifest HTTP/1.1[0m" 304 -
+2025-05-30 23:44:00,788 - werkzeug - INFO - 127.0.0.1 - - [30/May/2025 23:44:00] "GET /static/images/favicon/favicon-32x32.png HTTP/1.1" 200 -
+2025-05-30 23:44:13,957 - app - ERROR - Error inesperado al subir a S3: Unable to locate credentials
+2025-05-30 23:44:14,895 - werkzeug - INFO - 127.0.0.1 - - [30/May/2025 23:44:14] "POST /upload HTTP/1.1" 200 -
+2025-05-30 23:44:16,610 - werkzeug - INFO - 127.0.0.1 - - [30/May/2025 23:44:16] "GET / HTTP/1.1" 200 -
+2025-05-30 23:44:16,705 - werkzeug - INFO - 127.0.0.1 - - [30/May/2025 23:44:16] "[36mGET /static/css/main.css HTTP/1.1[0m" 304 -
+2025-05-30 23:44:16,720 - werkzeug - INFO - 127.0.0.1 - - [30/May/2025 23:44:16] "[36mGET /static/css/auth.css HTTP/1.1[0m" 304 -
+2025-05-30 23:44:16,722 - werkzeug - INFO - 127.0.0.1 - - [30/May/2025 23:44:16] "[36mGET /static/js/main.js HTTP/1.1[0m" 304 -
+2025-05-30 23:44:16,722 - werkzeug - INFO - 127.0.0.1 - - [30/May/2025 23:44:16] "[36mGET /static/css/gallery.css HTTP/1.1[0m" 304 -
+2025-05-30 23:44:16,730 - werkzeug - INFO - 127.0.0.1 - - [30/May/2025 23:44:16] "[36mGET /static/js/gallery.js HTTP/1.1[0m" 304 -
+2025-05-30 23:44:17,413 - werkzeug - INFO - 127.0.0.1 - - [30/May/2025 23:44:17] "[36mGET /uploads/52ef99ec3afc489d9c49ecbf9b6e8f2c-300525_233938.webp HTTP/1.1[0m" 304 -
+2025-05-30 23:44:17,453 - werkzeug - INFO - 127.0.0.1 - - [30/May/2025 23:44:17] "GET /uploads/b12b528141d6433a991534643fda3c1e-300525_234410.webp HTTP/1.1" 200 -
+2025-05-30 23:44:18,621 - werkzeug - INFO - 127.0.0.1 - - [30/May/2025 23:44:18] "[36mGET /uploads/8a842ac297594520b11d5ae975d1b160-300525_233752.webp HTTP/1.1[0m" 304 -
+2025-05-30 23:44:18,679 - werkzeug - INFO - 127.0.0.1 - - [30/May/2025 23:44:18] "[36mGET /static/images/favicon/site.webmanifest HTTP/1.1[0m" 304 -
+2025-05-30 23:44:18,685 - werkzeug - INFO - 127.0.0.1 - - [30/May/2025 23:44:18] "[36mGET /static/images/favicon/favicon-32x32.png HTTP/1.1[0m" 304 -
