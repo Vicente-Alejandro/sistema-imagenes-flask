@@ -8,6 +8,7 @@ from app.models.user import User, Role
 from app.models.image import Image
 from app.extensions import db
 from app.forms.admin_forms import UserEditForm, ImageFilterForm
+from app.services.aws_service import AWSCredentialService
 
 class AdminController:
     """
@@ -156,3 +157,109 @@ class AdminController:
             current_app.logger.error(f"Error al eliminar imagen: {str(e)}")
             flash(f'Error al eliminar imagen: {str(e)}', 'error')
             return {'redirect': url_for('admin.images')}, 302
+            
+    def aws_settings(self) -> Tuple[Dict[str, Any], int]:
+        """
+        Controlador para la página de configuración de AWS.
+        Muestra el formulario para actualizar credenciales y la configuración actual.
+        """
+        self._check_admin()
+        
+        # Obtener configuración actual desde la base de datos
+        from app.models.settings import AppSetting
+        
+        # Obtener timestamp de la última actualización
+        access_key_setting = AppSetting.query.filter_by(key='S3_ACCESS_KEY').first()
+        last_updated = access_key_setting.updated_at if access_key_setting else None
+        
+        # Obtener valores actuales para mostrar parcialmente (por seguridad)
+        s3_access_key = AppSetting.get('S3_ACCESS_KEY', current_app.config.get('S3_ACCESS_KEY', ''))
+        s3_secret_key = AppSetting.get('S3_SECRET_KEY', current_app.config.get('S3_SECRET_KEY', ''))
+        s3_session_token = AppSetting.get('S3_SESSION_TOKEN', current_app.config.get('S3_SESSION_TOKEN', ''))
+        s3_region = AppSetting.get('S3_REGION', current_app.config.get('S3_REGION', 'us-east-1'))
+        s3_bucket = AppSetting.get('S3_BUCKET_NAME', current_app.config.get('S3_BUCKET_NAME', ''))
+        
+        # Enmascarar credenciales para mostrar en la interfaz
+        masked_access_key = s3_access_key[:4] + '***' + s3_access_key[-4:] if len(s3_access_key) > 8 else '********'
+        masked_secret_key = s3_secret_key[:4] + '***' + s3_secret_key[-4:] if len(s3_secret_key) > 8 else '********'
+        has_session_token = bool(s3_session_token)
+        
+        # Datos para la plantilla
+        aws_data = {
+            'access_key': masked_access_key,
+            'secret_key': masked_secret_key,
+            'has_session_token': has_session_token,
+            'region': s3_region,
+            'bucket': s3_bucket,
+            'last_updated': last_updated
+        }
+        
+        return {'aws_data': aws_data}, 200
+        
+    def update_aws_credentials(self) -> Tuple[Dict[str, Any], int]:
+        """
+        Controlador para actualizar credenciales AWS.
+        Recibe el formulario con las nuevas credenciales, las valida y actualiza.
+        """
+        self._check_admin()
+        
+        # Verificar método de solicitud
+        if request.method != 'POST':
+            return {'error': 'Método no permitido'}, 405
+            
+        # Obtener datos del formulario
+        access_key = request.form.get('access_key')
+        secret_key = request.form.get('secret_key')
+        session_token = request.form.get('session_token')
+        region = request.form.get('region')
+        
+        # Validar datos requeridos
+        if not access_key or not secret_key:
+            flash('Access Key y Secret Key son campos obligatorios', 'error')
+            return {'redirect': url_for('admin.aws_settings')}, 302
+            
+        try:
+            # Actualizar credenciales
+            AWSCredentialService.update_credentials(
+                access_key=access_key,
+                secret_key=secret_key,
+                session_token=session_token,
+                region=region
+            )
+            
+            # Probar las credenciales
+            test_result = AWSCredentialService.test_credentials()
+            
+            if test_result['success']:
+                flash(f'Credenciales actualizadas correctamente. {test_result["message"]}', 'success')
+            else:
+                flash(f'Credenciales actualizadas pero hay un problema: {test_result["message"]}', 'warning')
+                
+            return {'redirect': url_for('admin.aws_settings')}, 302
+            
+        except Exception as e:
+            current_app.logger.error(f"Error al actualizar credenciales: {str(e)}")
+            flash(f'Error al actualizar credenciales: {str(e)}', 'error')
+            return {'redirect': url_for('admin.aws_settings')}, 302
+            
+    def test_aws_credentials(self) -> Tuple[Dict[str, Any], int]:
+        """
+        Controlador para probar las credenciales AWS actuales.
+        """
+        self._check_admin()
+        
+        try:
+            # Probar credenciales
+            test_result = AWSCredentialService.test_credentials()
+            
+            if test_result['success']:
+                flash(f'Conexión exitosa a AWS. {test_result["message"]}', 'success')
+            else:
+                flash(f'Error al conectar con AWS: {test_result["message"]}', 'error')
+                
+            return {'redirect': url_for('admin.aws_settings')}, 302
+            
+        except Exception as e:
+            current_app.logger.error(f"Error al probar credenciales: {str(e)}")
+            flash(f'Error al probar credenciales: {str(e)}', 'error')
+            return {'redirect': url_for('admin.aws_settings')}, 302

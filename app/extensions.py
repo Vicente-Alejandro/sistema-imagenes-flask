@@ -4,11 +4,13 @@ Extensiones para Flask
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 from flask_login import LoginManager
+from flask_wtf.csrf import CSRFProtect
 
 # Crear las instancias de las extensiones
 db = SQLAlchemy()
 migrate = Migrate()
 login_manager = LoginManager()
+csrf = CSRFProtect()
 
 # Configuración del Login Manager
 login_manager.login_view = 'auth.login'
@@ -28,3 +30,5 @@ def init_extensions(app):
     
     # Inicializar el gestor de login
     login_manager.init_app(app)
+    
+    # Inicializar protección CSRF

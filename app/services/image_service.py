@@ -113,27 +113,33 @@ class ImageService(ImageServiceInterface):
             True si la subida fue exitosa, False en caso contrario
         """
         try:
-            # Configuración de S3 desde la aplicación
+            # Obtener configuración del bucket
             s3_bucket = current_app.config.get('S3_BUCKET_NAME')
-            s3_region = current_app.config.get('S3_REGION')
-            s3_access_key = current_app.config.get('S3_ACCESS_KEY')
-            s3_secret_key = current_app.config.get('S3_SECRET_KEY')
+            current_app.logger.info(f"Subiendo a bucket: {s3_bucket}")
             
-            # Crear cliente de S3
-            s3_client = boto3.client(
-                's3',
-                region_name=s3_region,
-                aws_access_key_id=s3_access_key,
-                aws_secret_access_key=s3_secret_key
-            )
+            # Usar AWSCredentialService para obtener un cliente S3 configurado
+            from app.services.aws_service import AWSCredentialService
+            current_app.logger.info("Obteniendo cliente S3 desde AWSCredentialService")
+            s3_client = AWSCredentialService.get_s3_client()
             
-            # Subir archivo a S3
-            s3_client.upload_file(
-                local_path, 
-                s3_bucket,
-                filename,
-                ExtraArgs={'ContentType': 'image/webp'}
-            )
+            # Subir archivo a S3 (sin especificar ACL para evitar problemas de permisos)
+            current_app.logger.info(f"Iniciando subida de {filename} desde {local_path}")
+            try:
+                # Primero intentar con configuración mínima
+                s3_client.upload_file(
+                    local_path, 
+                    s3_bucket,
+                    filename,
+                    ExtraArgs={
+                        'ContentType': 'image/webp'
+                    }
+                )
+                current_app.logger.info("Subida exitosa sin ACL")
+            except Exception as e:
+                current_app.logger.error(f"Error en la subida simple: {e}")
+                # Si falla, intentar sin ExtraArgs
+                s3_client.upload_file(local_path, s3_bucket, filename)
+                current_app.logger.info("Subida exitosa sin ExtraArgs")
             
             current_app.logger.info(f"Imagen {filename} subida con éxito a S3")
             return True
@@ -308,21 +314,17 @@ class ImageService(ImageServiceInterface):
         if image.storage_type == 's3':
             # Implementar eliminación de S3
             try:
-                # Configuración de S3 desde la aplicación
+                # Obtener configuración del bucket
                 s3_bucket = current_app.config.get('S3_BUCKET_NAME')
-                s3_region = current_app.config.get('S3_REGION')
-                s3_access_key = current_app.config.get('S3_ACCESS_KEY')
-                s3_secret_key = current_app.config.get('S3_SECRET_KEY')
+                current_app.logger.info(f"Eliminando de bucket: {s3_bucket}")
                 
-                # Crear cliente de S3
-                s3_client = boto3.client(
-                    's3',
-                    region_name=s3_region,
-                    aws_access_key_id=s3_access_key,
-                    aws_secret_access_key=s3_secret_key
-                )
+                # Usar AWSCredentialService para obtener un cliente S3 configurado
+                from app.services.aws_service import AWSCredentialService
+                current_app.logger.info("Obteniendo cliente S3 desde AWSCredentialService")
+                s3_client = AWSCredentialService.get_s3_client()
                 
                 # Eliminar archivo de S3
+                current_app.logger.info(f"Eliminando archivo {image.filename} de S3")
                 s3_client.delete_object(Bucket=s3_bucket, Key=image.filename)
                 current_app.logger.info(f"Imagen {filename} eliminada de S3")
                 success = True

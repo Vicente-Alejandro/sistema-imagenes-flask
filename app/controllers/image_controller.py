@@ -1,5 +1,5 @@
 from typing import List, Dict, Any, Tuple
-from flask import request, jsonify, current_app, send_from_directory, flash, redirect, url_for
+from flask import request, jsonify, current_app, send_from_directory, flash, redirect, url_for, Response
 from werkzeug.datastructures import FileStorage
 from flask_login import current_user, login_required
 from app.extensions import db
@@ -76,7 +76,7 @@ class ImageController:
         Maneja tanto almacenamiento local como S3.
         
         Si la imagen es local, la sirve directamente desde el directorio de archivos.
-        Si la imagen está en S3, redirige a la URL de S3.
+        Si la imagen está en S3, la recupera de S3 y la sirve como proxy para evitar problemas CORS.
         """
         # Buscar la imagen en la base de datos
         image = Image.query.filter_by(filename=filename).first()
@@ -84,10 +84,51 @@ class ImageController:
         if not image:
             return {'error': 'Imagen no encontrada'}, 404
         
-        # Si está en S3, redireccionar a la URL de S3
+        # Si está en S3, servir como proxy (evita problemas CORS)
         if image.storage_type == 's3':
-            # La URL se genera en la propiedad url del modelo Image
-            return redirect(image.url)
+            try:
+                import boto3
+                from botocore.exceptions import ClientError
+                
+                # Configuración de S3
+                s3_bucket = current_app.config.get('S3_BUCKET_NAME')
+                s3_region = current_app.config.get('S3_REGION')
+                s3_access_key = current_app.config.get('S3_ACCESS_KEY')
+                s3_secret_key = current_app.config.get('S3_SECRET_KEY')
+                s3_session_token = current_app.config.get('S3_SESSION_TOKEN')
+                
+                # Crear cliente S3
+                s3_client_args = {
+                    'region_name': s3_region,
+                    'aws_access_key_id': s3_access_key,
+                    'aws_secret_access_key': s3_secret_key
+                }
+                
+                # Añadir token de sesión si existe (necesario para AWS Academy)
+                if s3_session_token:
+                    s3_client_args['aws_session_token'] = s3_session_token
+                
+                # Crear cliente S3
+                s3_client = boto3.client('s3', **s3_client_args)
+                
+                # Obtener el objeto de S3
+                response = s3_client.get_object(Bucket=s3_bucket, Key=filename)
+                
+                # Devolver el contenido como respuesta
+                return Response(
+                    response['Body'].read(),
+                    mimetype='image/webp',  # Asumiendo que todas son WebP como indicas en tu configuración
+                    headers={
+                        "Content-Disposition": f"inline; filename={filename}",
+                        "Cache-Control": "max-age=86400"  # Cache por 24 horas
+                    }
+                )
+            except ClientError as e:
+                current_app.logger.error(f"Error al obtener imagen de S3: {e}")
+                return {'error': 'No se pudo recuperar la imagen'}, 500
+            except Exception as e:
+                current_app.logger.error(f"Error inesperado al obtener imagen de S3: {e}")
+                return {'error': 'Error interno al procesar la imagen'}, 500
         
         # Si es local, servir el archivo directamente
         return send_from_directory(current_app.config['UPLOAD_FOLDER'], filename)

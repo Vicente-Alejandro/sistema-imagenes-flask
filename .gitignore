@@ -4,7 +4,6 @@ __pycache__/
 *$py.class
 *.so
 .Python
-
 # Entornos virtuales
 venv/
 env/
@@ -13,42 +12,32 @@ ENV/
 .venv
 env.bak/
 venv.bak/
-
-#migrations
-migrations/
-
 # Archivos de configuración local
 instance/
 .env
 .flaskenv
 *.cfg
 !example.cfg
-
 # Logs
 logs/
 *.log
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
-
 # Directorios de uploads - no versionar archivos subidos por usuarios
 uploads/*
 !uploads/.gitkeep
-
 # Archivos de metadatos - dependen del entorno
 app/image_metadata.json
-
 # Distribución / empaquetado
 dist/
 build/
 *.egg-info/
 *.egg
-
 # Base de datos
 *.db
 *.sqlite
 *.sqlite3
-
 # IDEs y editores
 .idea/
 .vscode/
@@ -57,7 +46,6 @@ build/
 .DS_Store
 *~
 .vs/
-
 # Archivos de test / coverage
 htmlcov/
 .tox/
@@ -68,14 +56,11 @@ nosetests.xml
 coverage.xml
 *.cover
 .hypothesis/
-
 # Archivos específicos de PyInstaller
 *.manifest
 *.spec
-
 # Archivos específicos de Jupyter Notebook
 .ipynb_checkpoints
-
 # Archivos de frontend (si se añaden componentes frontend)
 node_modules/
 npm-debug.log

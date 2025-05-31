@@ -16,6 +16,9 @@ except (ValueError, TypeError):
     
 # Configuración de base de datos
 DB_CONNECTION = os.environ.get('DB_CONNECTION', 'sqlite').lower()
+DB_DRIVER = os.environ.get('DB_DRIVER', 'mysqlclient').lower()
+DB_USE_SSL = os.environ.get('DB_USE_SSL', 'false').lower() in ('true', 't', '1', 'yes', 'y')
+DB_VERIFY_SSL = os.environ.get('DB_VERIFY_SSL', 'true').lower() in ('true', 't', '1', 'yes', 'y')
 DB_HOST = os.environ.get('DB_HOST', '127.0.0.1')
 DB_PORT = os.environ.get('DB_PORT', 3306)
 DB_DATABASE = os.environ.get('DB_DATABASE', 'piton')
@@ -41,7 +44,11 @@ class Config:
     S3_BUCKET_URL = os.environ.get('S3_BUCKET_URL')
     S3_ACCESS_KEY = os.environ.get('S3_ACCESS_KEY')
     S3_SECRET_KEY = os.environ.get('S3_SECRET_KEY')
+    S3_SESSION_TOKEN = os.environ.get('S3_SESSION_TOKEN')  # Añadido para AWS Academy
     S3_REGION = os.environ.get('S3_REGION', 'us-east-1')
+    
+    # Fuente de las credenciales AWS: 'database' o 'env'
+    AWS_CREDENTIALS_SOURCE = os.environ.get('AWS_CREDENTIALS_SOURCE', 'database')
     
     # En desarrollo, generar una clave aleatoria para la sesión
     # En producción, SIEMPRE usar la variable de entorno SECRET_KEY
@@ -65,7 +72,29 @@ class Config:
     if DB_CONNECTION == 'sqlite':
         SQLALCHEMY_DATABASE_URI = f'sqlite:///{os.path.join(basedir, DB_DATABASE + ".db")}'
     elif DB_CONNECTION in ['mysql', 'mariadb']:
-        SQLALCHEMY_DATABASE_URI = f'{DB_CONNECTION}://{DB_USERNAME}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_DATABASE}'
+        # Construir la cadena de conexión según las configuraciones
+        driver_string = ''
+        if DB_DRIVER in ['pymysql', 'mysqlclient']:
+            # Si se especificó pymysql, usarlo como driver
+            if DB_DRIVER == 'pymysql':
+                driver_string = '+pymysql'
+            
+            # Construir URL base
+            url = f'{DB_CONNECTION}{driver_string}://{DB_USERNAME}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_DATABASE}'
+            
+            # Añadir parámetros SSL si es necesario
+            if DB_USE_SSL:
+                if DB_DRIVER == 'pymysql':
+                    # Parámetros para PyMySQL
+                    url += f'?ssl=True&ssl_verify_identity={"True" if DB_VERIFY_SSL else "False"}'
+                else:
+                    # Parámetros para mysqlclient
+                    url += f'?ssl_mode={"VERIFY_IDENTITY" if DB_VERIFY_SSL else "REQUIRED"}'
+            
+            SQLALCHEMY_DATABASE_URI = url
+        else:
+            # Si no se especifica un driver válido, usar la configuración por defecto
+            SQLALCHEMY_DATABASE_URI = f'{DB_CONNECTION}://{DB_USERNAME}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_DATABASE}'
     else:
         # Valor predeterminado es SQLite si no se especifica un tipo de conexión válido
         SQLALCHEMY_DATABASE_URI = f'sqlite:///{os.path.join(basedir, "piton.db")}'
@@ -76,6 +105,7 @@ class Config:
     SQLALCHEMY_ENGINE_OPTIONS = {
         'pool_recycle': 280,
         'pool_pre_ping': True
+        # Sin argumentos de conexión adicionales
     }
     
     # Configuración de logging

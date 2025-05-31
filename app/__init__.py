@@ -38,4 +38,9 @@ def create_app(config_class=Config):
     from app.utils.template_filters import init_template_filters
     init_template_filters(app)
     
+    # Inicializar configuraciones de AWS si no existen
+    with app.app_context():
+        from app.services.init_service import InitService
+        InitService.init_aws_settings()
+    
     return app

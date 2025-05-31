@@ -1,0 +1,144 @@
+{% extends "base.html" %}
+{% block title %}Configuración AWS{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <h1>Configuración AWS</h1>
+                <div>
+                    <form action="{{ url_for('admin.test_aws_credentials') }}" method="POST" class="d-inline">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-sync-alt me-1"></i> Probar Conexión
+                        </button>
+                    </form>
+                </div>
+            </div>
+            <p class="lead">Gestiona las credenciales de Amazon Web Services para almacenar imágenes en S3</p>
+        </div>
+    </div>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+    {% for category, message in messages %}
+    <div class="alert alert-{{ category }}">{{ message }}</div>
+    {% endfor %}
+    {% endif %}
+    {% endwith %}
+
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="card-title mb-0">Credenciales Actuales</h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <h6>Información de Conexión</h6>
+                        <p><strong>Región:</strong> {{ aws_data.region }}</p>
+                        <p><strong>Bucket:</strong> {{ aws_data.bucket }}</p>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <h6>Credenciales (parcialmente enmascaradas)</h6>
+                        <p><strong>Access Key:</strong> <code>{{ aws_data.access_key }}</code></p>
+                        <p><strong>Secret Key:</strong> <code>{{ aws_data.secret_key }}</code></p>
+                        <p><strong>Session Token:</strong> 
+                            {% if aws_data.has_session_token %}
+                            <span class="badge bg-success">Configurado</span>
+                            {% else %}
+                            <span class="badge bg-warning">No configurado</span>
+                            {% endif %}
+                        </p>
+                    </div>
+                    
+                    {% if aws_data.last_updated %}
+                    <div class="mb-0">
+                        <small class="text-muted">Última actualización: {{ aws_data.last_updated.strftime('%d/%m/%Y %H:%M:%S') }}</small>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="card-title mb-0">Actualizar Credenciales</h5>
+                </div>
+                <div class="card-body">
+                    <form action="{{ url_for('admin.update_aws_credentials') }}" method="POST">
+                        
+                        <div class="mb-3">
+                            <label for="access_key" class="form-label">Access Key ID</label>
+                            <input type="text" class="form-control" id="access_key" name="access_key" 
+                                   placeholder="Ingresa Access Key ID" required>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="secret_key" class="form-label">Secret Access Key</label>
+                            <input type="password" class="form-control" id="secret_key" name="secret_key" 
+                                   placeholder="Ingresa Secret Access Key" required>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="session_token" class="form-label">Session Token (requerido para AWS Academy)</label>
+                            <textarea class="form-control" id="session_token" name="session_token" 
+                                     rows="3" placeholder="Ingresa AWS Session Token (para cuentas temporales)"></textarea>
+                            <small class="form-text text-muted">
+                                Este campo es obligatorio para credenciales temporales como las de AWS Academy.
+                                Las credenciales sin token de sesión son permanentes.
+                            </small>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="region" class="form-label">Región AWS</label>
+                            <select class="form-select" id="region" name="region">
+                                <option value="us-east-1" {% if aws_data.region == 'us-east-1' %}selected{% endif %}>US East (N. Virginia) - us-east-1</option>
+                                <option value="us-east-2" {% if aws_data.region == 'us-east-2' %}selected{% endif %}>US East (Ohio) - us-east-2</option>
+                                <option value="us-west-1" {% if aws_data.region == 'us-west-1' %}selected{% endif %}>US West (N. California) - us-west-1</option>
+                                <option value="us-west-2" {% if aws_data.region == 'us-west-2' %}selected{% endif %}>US West (Oregon) - us-west-2</option>
+                                <option value="ca-central-1" {% if aws_data.region == 'ca-central-1' %}selected{% endif %}>Canada (Central) - ca-central-1</option>
+                                <option value="eu-west-1" {% if aws_data.region == 'eu-west-1' %}selected{% endif %}>EU (Ireland) - eu-west-1</option>
+                                <option value="eu-central-1" {% if aws_data.region == 'eu-central-1' %}selected{% endif %}>EU (Frankfurt) - eu-central-1</option>
+                                <option value="sa-east-1" {% if aws_data.region == 'sa-east-1' %}selected{% endif %}>South America (São Paulo) - sa-east-1</option>
+                            </select>
+                        </div>
+                        
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-success">
+                                <i class="fas fa-save me-1"></i> Guardar Credenciales
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-info text-white">
+                    <h5 class="card-title mb-0">Información sobre AWS Academy</h5>
+                </div>
+                <div class="card-body">
+                    <p>Las credenciales de AWS Academy son <strong>temporales</strong> y expiran cada 1-12 horas. Cuando expire el token de sesión:</p>
+                    <ol>
+                        <li>Accede a tu portal de AWS Academy</li>
+                        <li>Busca la sección "AWS Details" o "AWS CLI"</li>
+                        <li>Copia las nuevas credenciales temporales (incluyendo el token de sesión)</li>
+                        <li>Actualízalas en este formulario</li>
+                    </ol>
+                    <div class="alert alert-warning">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        <strong>Importante:</strong> Las credenciales de AWS Academy expiran regularmente.
+                        Si las imágenes dejan de ser accesibles, es probable que necesites actualizar el token de sesión.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

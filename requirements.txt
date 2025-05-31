@@ -13,3 +13,4 @@ mysqlclient
 flask_wtf
 standard-imghdr
 email_validator
+pymysql

@@ -7,9 +7,14 @@ from app.models.user import User, Role
 from app.models.image import Image
 from app.forms.admin_forms import UserEditForm, ImageFilterForm
 from app.extensions import db
+from app.controllers.admin_controller import AdminController
+from flask_wtf.csrf import CSRFProtect
 
 # Crear blueprint para rutas de administración
 admin_bp = Blueprint('admin', __name__, url_prefix='/admin')
+
+# Crear instancia del controlador de administración
+admin_controller = AdminController()
 
 # Decorador para comprobar si el usuario es administrador
 def admin_required(func):
@@ -121,3 +126,38 @@ def delete_image(image_id):
         flash(f'Error al eliminar la imagen: {str(e)}', 'error')
     
     return redirect(request.referrer or url_for('admin.images'))
+
+@admin_bp.route('/aws-settings', methods=['GET'])
+@login_required
+@admin_required
+def aws_settings():
+    """Vista para la página de configuración de AWS"""
+    result, _ = admin_controller.aws_settings()
+    
+    return render_template('admin/aws_settings.html', aws_data=result.get('aws_data', {}))
+
+@admin_bp.route('/aws-settings/update', methods=['POST'])
+@login_required
+@admin_required
+def update_aws_credentials():
+    """Vista para actualizar las credenciales AWS"""
+    result, status_code = admin_controller.update_aws_credentials()
+    
+    # Si hay una redirección en la respuesta, seguirla
+    if status_code in (301, 302) and 'redirect' in result:
+        return redirect(result['redirect'])
+        
+    return redirect(url_for('admin.aws_settings'))
+
+@admin_bp.route('/aws-settings/test', methods=['POST'])
+@login_required
+@admin_required
+def test_aws_credentials():
+    """Vista para probar las credenciales AWS actuales"""
+    result, status_code = admin_controller.test_aws_credentials()
+    
+    # Si hay una redirección en la respuesta, seguirla
+    if status_code in (301, 302) and 'redirect' in result:
+        return redirect(result['redirect'])
+        
+    return redirect(url_for('admin.aws_settings'))
