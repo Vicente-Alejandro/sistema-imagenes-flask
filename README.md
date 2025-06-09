@@ -1,89 +1,67 @@
-<div align="center">
+# Nombre de tu Proyecto (Ej: Galería de Imágenes Flask)
 
-# 🖼️ Sistema de Gestión de Imágenes
+Descripción breve de tu proyecto...
 
-![Python](https://img.shields.io/badge/python-3.8+-blue.svg)
-![Flask](https://img.shields.io/badge/flask-2.3.3-green.svg)
-![License](https://img.shields.io/badge/license-MIT-orange.svg)
-![Contributions welcome](https://img.shields.io/badge/contributions-welcome-brightgreen.svg)
+## Características
 
-**Una aplicación web para gestionar y visualizar imágenes**
+*   Modal/lightbox para visualización de imágenes a tamaño completo.
+*   Carga diferida (lazy loading) para optimizar rendimiento.
+*   Nombres aleatorios generados con UUID para mayor seguridad.
+*   Conversión automática a formato WebP para optimizar almacenamiento.
+*   Gestión de imágenes con almacenamiento en AWS S3.
+*   Sistema de backup de base de datos automatizado con AWS Lambda.
 
-[Ver Demo](#) • [Reportar Bug](../../issues) • [Solicitar Función](../../issues)
+## Requisitos Previos (Desarrollo Local)
 
-</div>
+*   Python 3.8+
+*   pip
+*   Virtualenv (recomendado)
+*   MariaDB/MySQL (para base de datos local)
 
----
+## Instalación (Desarrollo Local)
 
-## ✨ Características Principales
+1.  Clona el repositorio:
+    ```bash
+    git clone https://github.com/Vicente-Alejandro/sistema-imagenes-flask.git
+    cd sistema-imagenes-flask
+    ```
+2.  Crea y activa un entorno virtual:
+    ```bash
+    python3 -m venv venv
+    source venv/bin/activate  # En Linux/macOS
+    # venv\Scripts\activate    # En Windows
+    ```
+3.  Instala las dependencias:
+    ```bash
+    pip install -r requirements.txt
+    ```
+4.  Configura tus variables de entorno. Copia `.env.example` a `.env` y edítalo con tu configuración local:
+    ```bash
+    cp .env.example .env
+    nano .env # o tu editor preferido
+    ```
+    Asegúrate de configurar las credenciales de la base de datos local y, si es necesario, las de AWS para S3 si `STORAGE_TYPE=s3` y `AWS_CREDENTIALS_SOURCE=env`.
 
-- **🚀 Optimización avanzada** - Conversión automática a WebP para reducir tamaño manteniendo calidad
-- **💾 Almacenamiento dual** - Soporte para almacenamiento local y Amazon S3 configurable con un simple switch
-- **🔍 Validación robusta** - Verificación exhaustiva de tipos, dimensiones y seguridad de archivos
-- **⚡ Carga diferida (lazy loading)** - Mejora el rendimiento cargando imágenes solo cuando son visibles
-- **🧩 Arquitectura modular** - Diseñada con principios SOLID y patrón MVC para fácil mantenimiento
-- **🔒 Seguridad mejorada** - Validación estricta de archivos y manejo seguro de variables de entorno
+5.  Configura tu base de datos local (MariaDB/MySQL) y crea la base de datos especificada en `.env`.
 
-## 🔧 Instalación Rápida
+6.  Aplica las migraciones de la base de datos:
+    ```bash
+    flask db upgrade
+    ```
+7.  Ejecuta la aplicación:
+    ```bash
+    flask run
+    ```
+    La aplicación estará disponible en `http://127.0.0.1:PUERTO` (el puerto se define en `.env`).
 
-```bash
-# Clonar el repositorio
-git clone https://github.com/Vicente-Alejandro/sistema-imagenes-flask.git
-cd sistema-imagenes-flask
+## Despliegue
 
-# Crear entorno virtual e instalar dependencias
-python -m venv venv
-source venv/bin/activate  # En Windows: venv\Scripts\activate
-pip install -r requirements.txt
+Para instrucciones detalladas sobre cómo desplegar esta aplicación en un servidor de producción (Debian 12 con Gunicorn y Nginx), por favor consulta la **[Guía de Despliegue](.github/DEPLOY.MD)**.
 
-# Configurar variables de entorno
-cp .env.example .env
-# Editar .env con valores apropiados
+## Contribuciones
 
-# Ejecutar la aplicación
-python run.py
-```
+Las contribuciones son bienvenidas. Por favor, abre un issue o un pull request.
 
-## 🚢 Despliegue
+## Licencia
 
-Para instrucciones detalladas de despliegue en entornos de producción, consulta nuestra [Guía de Despliegue](.github/DEPLOY.md).
-
-## 🔧 Tecnologías
-
-- **Backend**: Flask, Python 3.8+
-- **Frontend**: HTML5, CSS3, JavaScript (Vanilla)
-- **Procesamiento de imágenes**: Pillow, python-magic
-- **Almacenamiento en la nube**: Amazon S3 (opcional, mediante boto3)
-- **Configuración**: python-dotenv
-
-## 🤝 Contribuciones
-
-¡Las contribuciones son bienvenidas! Si deseas contribuir:
-
-1. Haz fork del proyecto
-2. Crea una rama para tu función (`git checkout -b feature/amazing-feature`)
-3. Haz commit de tus cambios (`git commit -m 'Añadir nueva función'`)
-4. Haz push a la rama (`git push origin feature/amazing-feature`)
-5. Abre un Pull Request
-
-Consulta nuestras [Directrices de Contribución](CONTRIBUTING.md) para más información.
-
-## 📄 Licencia
-
-Este proyecto está licenciado bajo la Licencia MIT - ver el archivo [LICENSE](LICENSE) para más detalles.
-
-## 📞 Contacto
-
-Vicente Alejandro - alejandrohidalgosh@gmail.com
-
-Enlace del Proyecto: [https://github.com/Vicente-Alejandro/sistema-imagenes-flask](https://github.com/Vicente-Alejandro/sistema-imagenes-flask)
-
----
-
-<div align="center">
-
-**¿Te gusta este proyecto? Dale una ⭐ para apoyar :sunglasses:!**
-
-</div>
-
-
+Este proyecto está bajo la Licencia MIT. Ver el archivo `LICENSE` para más detalles (si existe).
